@@ -12,6 +12,8 @@
         <module>gateway</module>
         <module>annotations</module>
         <module>core</module>
+        <module>proto</module>
+        <module>client</module>
     </modules>
 
     <properties>
@@ -20,6 +22,11 @@
         <netty.version>4.1.39.Final</netty.version>
         <slf4j.version>1.7.15</slf4j.version>
         <log4j.version>1.2.17</log4j.version>
+        <lombok.version>1.18.8</lombok.version>
+        <fastjson.version>1.2.59</fastjson.version>
+        <guava.version>28.1-jre</guava.version>
+        <protobuf.version>3.9.1</protobuf.version>
+        <junit.version>4.12</junit.version>
     </properties>
 
     <dependencyManagement>
@@ -48,6 +55,37 @@
                 <version>${log4j.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
 
         </dependencies>
 
