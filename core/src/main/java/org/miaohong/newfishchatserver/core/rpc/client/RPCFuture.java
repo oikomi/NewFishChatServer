@@ -111,14 +111,11 @@ public class RPCFuture implements Future<Object> {
 
     private void runCallback(final AsyncRPCCallback callback) {
         final RpcResponse res = this.response;
-        RpcClient.submit(new Runnable() {
-            @Override
-            public void run() {
-                if (!res.isError()) {
-                    callback.success(res.getResult());
-                } else {
-                    callback.fail(new RuntimeException("Response error", new Throwable(res.getError())));
-                }
+        RpcClient.submit(() -> {
+            if (!res.isError()) {
+                callback.success(res.getResult());
+            } else {
+                callback.fail(new RuntimeException("Response error", new Throwable(res.getError())));
             }
         });
     }
@@ -128,18 +125,18 @@ public class RPCFuture implements Future<Object> {
         private static final long serialVersionUID = 1L;
 
         //future status
-        private final int done = 1;
-        private final int pending = 0;
+        private static final int DONE = 1;
+        private static final int PENDING = 0;
 
         @Override
         protected boolean tryAcquire(int arg) {
-            return getState() == done;
+            return getState() == DONE;
         }
 
         @Override
         protected boolean tryRelease(int arg) {
-            if (getState() == pending) {
-                if (compareAndSetState(pending, done)) {
+            if (getState() == PENDING) {
+                if (compareAndSetState(PENDING, DONE)) {
                     return true;
                 } else {
                     return false;
@@ -151,7 +148,7 @@ public class RPCFuture implements Future<Object> {
 
         public boolean isDone() {
             getState();
-            return getState() == done;
+            return getState() == DONE;
         }
     }
 }

@@ -11,12 +11,12 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
+public class CallerInvocationHandler<T> implements InvocationHandler, IAsyncObjectProxy {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ObjectProxy.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CallerInvocationHandler.class);
     private Class<T> clazz;
 
-    public ObjectProxy(Class<T> clazz) {
+    public CallerInvocationHandler(Class<T> clazz) {
         this.clazz = clazz;
     }
 

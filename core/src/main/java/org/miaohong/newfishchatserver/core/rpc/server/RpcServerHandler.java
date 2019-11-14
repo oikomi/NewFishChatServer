@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> implements RpcHandler {
 
@@ -39,7 +40,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> im
                 LOG.debug("Send response for request {}", request.getRequestId()));
     }
 
-    private Object handle(RpcRequest request) throws InvocationTargetException {
+    private Object handle(RpcRequest request) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         RpcContext.init(request);
         String className = request.getClassName();
         Object serviceBean = serviceHandler.get(className);
@@ -60,14 +61,14 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> im
         }
 
         // JDK reflect
-        /*Method method = serviceClass.getMethod(methodName, parameterTypes);
+        Method method = serviceClass.getMethod(methodName, parameterTypes);
         method.setAccessible(true);
-        return method.invoke(serviceBean, parameters);*/
+        return method.invoke(serviceBean, parameters);
 
         // Cglib reflect
-        FastClass serviceFastClass = FastClass.create(serviceClass);
-        int methodIndex = serviceFastClass.getIndex(methodName, parameterTypes);
-        return serviceFastClass.invoke(methodIndex, serviceBean, parameters);
+//        FastClass serviceFastClass = FastClass.create(serviceClass);
+//        int methodIndex = serviceFastClass.getIndex(methodName, parameterTypes);
+//        return serviceFastClass.invoke(methodIndex, serviceBean, parameters);
     }
 
     @Override

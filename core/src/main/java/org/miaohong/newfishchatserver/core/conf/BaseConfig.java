@@ -9,7 +9,7 @@ public abstract class BaseConfig implements java.io.Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    protected Properties properties;
+    private Properties properties;
 
     public BaseConfig() {
         this.properties = PropUtil.loadProperties(getPropertiesPath());

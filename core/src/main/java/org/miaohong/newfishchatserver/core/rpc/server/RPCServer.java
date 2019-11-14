@@ -17,8 +17,7 @@ public class RPCServer extends Server {
     public RPCServer(String bindAddr, int bindPort) {
         serviceHandler = new RpcServiceHandler();
         try {
-            nettyServer = new NettyServer(new NettyConfig(bindAddr,
-                    bindPort, 10), serviceHandler);
+            nettyServer = new NettyServer(new NettyConfig(bindAddr, bindPort, 10), serviceHandler);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }

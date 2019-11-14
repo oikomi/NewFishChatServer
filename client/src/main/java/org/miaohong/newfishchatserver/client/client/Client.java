@@ -16,7 +16,7 @@ public class Client {
         RpcClient rpcClient = new RpcClient("127.0.0.1:15000");
 
         ConnectManager.getInstance().updateConnectedServer(Collections.singletonList("127.0.0.1:15000"));
-        GatewayProto s = rpcClient.create(GatewayProto.class);
+        GatewayProto s = rpcClient.getProxy(GatewayProto.class);
         String result = s.test();
         LOG.info("result is {}", result);
     }

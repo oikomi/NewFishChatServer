@@ -10,8 +10,9 @@ import org.miaohong.newfishchatserver.core.proto.RpcRequest;
 import org.miaohong.newfishchatserver.core.proto.RpcResponse;
 
 public class RpcClientInitializer extends ChannelInitializer<SocketChannel> {
+
     @Override
-    protected void initChannel(SocketChannel socketChannel) throws Exception {
+    protected void initChannel(SocketChannel socketChannel) {
         ChannelPipeline cp = socketChannel.pipeline();
         cp.addLast(new RpcEncoder(RpcRequest.class));
         cp.addLast(new LengthFieldBasedFrameDecoder(65536, 0, 4, 0, 0));

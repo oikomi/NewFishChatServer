@@ -55,7 +55,7 @@ public class ConnectManager {
         if (allServerAddress != null) {
             if (allServerAddress.size() > 0) {  // Get available server node
                 //update local serverNodes cache
-                HashSet<InetSocketAddress> newAllServerNodeSet = new HashSet<InetSocketAddress>();
+                HashSet<InetSocketAddress> newAllServerNodeSet = new HashSet<>();
                 for (int i = 0; i < allServerAddress.size(); ++i) {
                     String[] array = allServerAddress.get(i).split(":");
                     if (array.length == 2) { // Should check IP and port

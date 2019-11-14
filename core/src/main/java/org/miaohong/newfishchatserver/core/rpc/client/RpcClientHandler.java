@@ -19,7 +19,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> i
 
     private static final Logger LOG = LoggerFactory.getLogger(RpcClientHandler.class);
 
-    private ConcurrentHashMap<String, RPCFuture> pendingRPC = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, RPCFuture> pendingRpc = new ConcurrentHashMap<>();
 
     private Channel channel;
     private SocketAddress remotePeer;
@@ -47,9 +47,9 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> i
     @Override
     public void channelRead0(ChannelHandlerContext ctx, RpcResponse response) throws Exception {
         String requestId = response.getRequestId();
-        RPCFuture rpcFuture = pendingRPC.get(requestId);
+        RPCFuture rpcFuture = pendingRpc.get(requestId);
         if (rpcFuture != null) {
-            pendingRPC.remove(requestId);
+            pendingRpc.remove(requestId);
             rpcFuture.done(response);
         }
     }
@@ -67,7 +67,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> i
     public RPCFuture sendRequest(RpcRequest request) {
         final CountDownLatch latch = new CountDownLatch(1);
         RPCFuture rpcFuture = new RPCFuture(request);
-        pendingRPC.put(request.getRequestId(), rpcFuture);
+        pendingRpc.put(request.getRequestId(), rpcFuture);
         channel.writeAndFlush(request).addListener((ChannelFutureListener) future -> latch.countDown());
         try {
             latch.await();
