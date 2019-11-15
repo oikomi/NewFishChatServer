@@ -1,8 +1,7 @@
 package org.miaohong.newfishchatserver.core.rpc.server;
 
 import com.google.common.base.Preconditions;
-import org.miaohong.newfishchatserver.core.net.NettyConfig;
-import org.miaohong.newfishchatserver.core.net.NettyServer;
+import org.miaohong.newfishchatserver.core.transport.NettyServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +16,7 @@ public class RPCServer extends Server {
     public RPCServer(String bindAddr, int bindPort) {
         serviceHandler = new RpcServiceHandler();
         try {
-            nettyServer = new NettyServer(new NettyConfig(bindAddr, bindPort, 10), serviceHandler);
+            nettyServer = new NettyServer(bindAddr, bindPort, serviceHandler);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }

@@ -6,12 +6,16 @@ import org.miaohong.newfishchatserver.core.rpc.client.proxy.IAsyncObjectProxy;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.ProxyConstants;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.ProxyFactory;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.jdk.JDKInvocationHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class RpcClient implements Client {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RpcClient.class);
 
     private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16,
             600L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(65535));
@@ -28,7 +32,6 @@ public class RpcClient implements Client {
         threadPoolExecutor.submit(task);
     }
 
-    @SuppressWarnings("unchecked")
     public <T> T getProxy(Class<T> interfaceClass) {
         return proxyFactory.getProxy(interfaceClass);
     }

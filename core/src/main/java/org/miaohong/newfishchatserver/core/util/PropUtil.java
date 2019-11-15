@@ -80,4 +80,25 @@ public class PropUtil {
         }
         return value;
     }
+
+    public static boolean getBooleanValue(String key, Boolean defaultValue, Properties props) {
+        if (!props.containsKey(key)) {
+            LOG.info("not setting {} value, used default value: {}", key, defaultValue);
+            return defaultValue;
+        }
+
+        String valueString = (String) props.get(key);
+        Boolean value = defaultValue;
+        if (!Strings.isNullOrEmpty(valueString)) {
+            try {
+                value = Boolean.parseBoolean(valueString);
+            } catch (Exception ex) {
+                LOG.error("failed to convert {} value: {}, used default value: {}",
+                        key, valueString, defaultValue);
+            }
+        }
+        return value;
+    }
+
+
 }

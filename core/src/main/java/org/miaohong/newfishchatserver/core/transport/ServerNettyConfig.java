@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.net;
+package org.miaohong.newfishchatserver.core.transport;
 
 import com.google.common.base.Preconditions;
 import lombok.Data;
@@ -9,18 +9,16 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 @Data
-public class NettyConfig {
+public class ServerNettyConfig {
 
     public static final String SERVER_THREAD_GROUP_NAME = "Netty Server";
     public static final String CLIENT_THREAD_GROUP_NAME = "Netty Client";
-    private static final Logger LOG = LoggerFactory.getLogger(NettyConfig.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ServerNettyConfig.class);
     private final InetAddress serverAddress;
-
     private final int serverNumThreads;
-
     private final int serverPort;
 
-    public NettyConfig(
+    public ServerNettyConfig(
             String serverAddr,
             int serverPort,
             int serverNumThreads) throws UnknownHostException {

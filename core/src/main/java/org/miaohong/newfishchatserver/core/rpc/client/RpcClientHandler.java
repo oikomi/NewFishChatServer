@@ -75,8 +75,6 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> i
             LOG.error(e.getMessage());
         }
 
-        LOG.info("send request done");
-
         return rpcFuture;
     }
 }

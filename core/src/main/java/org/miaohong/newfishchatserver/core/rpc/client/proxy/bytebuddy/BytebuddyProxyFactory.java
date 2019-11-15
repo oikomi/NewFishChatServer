@@ -21,14 +21,14 @@ public class BytebuddyProxyFactory implements ProxyFactory {
     private static final Map<Class, Class> PROXY_CLASS_MAP = new ConcurrentHashMap<>();
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T getProxy(Class<T> clz) {
         Class<? extends T> cls = PROXY_CLASS_MAP.get(clz);
         if (cls == null) {
             cls = new ByteBuddy()
                     .subclass(clz)
-                    .method(
-                            ElementMatchers.isDeclaredBy(clz).or(ElementMatchers.isEquals())
-                                    .or(ElementMatchers.isToString().or(ElementMatchers.isHashCode())))
+                    .method(ElementMatchers.isDeclaredBy(clz).or(ElementMatchers.isEquals())
+                            .or(ElementMatchers.isToString().or(ElementMatchers.isHashCode())))
                     .intercept(MethodDelegation.to(new BytebuddyInvocationHandler(), "handler"))
                     .make()
                     .load(clz.getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
@@ -38,8 +38,8 @@ public class BytebuddyProxyFactory implements ProxyFactory {
         }
         try {
             return cls.newInstance();
-        } catch (Throwable t) {
-            throw new RuntimeException("construct proxy with bytebuddy occurs error", t);
+        } catch (Exception e) {
+            throw new RuntimeException("construct proxy with bytebuddy occurs error", e);
         }
     }
 }

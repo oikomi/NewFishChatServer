@@ -5,7 +5,7 @@ import org.miaohong.newfishchatserver.core.util.PropUtil;
 
 import java.util.Properties;
 
-public abstract class BaseConfig implements java.io.Serializable {
+public abstract class BaseConfig implements Config, java.io.Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -15,17 +15,27 @@ public abstract class BaseConfig implements java.io.Serializable {
         this.properties = PropUtil.loadProperties(getPropertiesPath());
     }
 
+    @Override
     public String getString(String propName) {
         return properties.getProperty(propName);
     }
 
+    @Override
     public int getInt(String propName, int defaultValue) {
         return PropUtil.getIntValue(propName, defaultValue, properties);
     }
 
+    @Override
     public long getLong(String propName, long defaultValue) {
         return PropUtil.getLongValue(propName, defaultValue, properties);
     }
+
+
+    @Override
+    public boolean getBoolean(String propName, Boolean defaultValue) {
+        return PropUtil.getBooleanValue(propName, defaultValue, properties);
+    }
+
 
     protected abstract String getPropertiesPath();
 
