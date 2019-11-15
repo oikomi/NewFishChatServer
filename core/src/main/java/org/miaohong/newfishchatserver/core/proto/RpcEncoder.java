@@ -3,8 +3,14 @@ package org.miaohong.newfishchatserver.core.proto;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
+import org.miaohong.newfishchatserver.core.extension.ExtensionLoader;
+import org.miaohong.newfishchatserver.core.proto.serialize.Serialization;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RpcEncoder extends MessageToByteEncoder {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RpcEncoder.class);
 
     private Class<?> genericClass;
 
@@ -14,9 +20,10 @@ public class RpcEncoder extends MessageToByteEncoder {
 
     @Override
     public void encode(ChannelHandlerContext ctx, Object in, ByteBuf out) throws Exception {
+        LOG.info("do encode");
         if (genericClass.isInstance(in)) {
-            byte[] data = SerializationUtil.serialize(in);
-            //byte[] data = JsonUtil.serialize(in); // Not use this, have some bugs
+            byte[] data = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(Serialization.class,
+                    "protobuf").serialize(in);
             out.writeInt(data.length);
             out.writeBytes(data);
         }

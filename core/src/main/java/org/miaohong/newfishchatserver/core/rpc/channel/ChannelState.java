@@ -1,15 +1,25 @@
 package org.miaohong.newfishchatserver.core.rpc.channel;
 
 public enum ChannelState {
-    /** 未初始化状态 **/
+    /**
+     * 未初始化状态
+     **/
     UNINIT(0),
-    /** 初始化完成 **/
+    /**
+     * 初始化完成
+     **/
     INIT(1),
-    /** 存活可用状态 **/
+    /**
+     * 存活可用状态
+     **/
     ALIVE(2),
-    /** 不存活可用状态 **/
+    /**
+     * 不存活可用状态
+     **/
     UNALIVE(3),
-    /** 关闭状态 **/
+    /**
+     * 关闭状态
+     **/
     CLOSE(4);
 
     public final int value;

@@ -1,6 +1,5 @@
 package org.miaohong.newfishchatserver.gateway.server;
 
-import org.miaohong.newfishchatserver.core.rpc.client.ConnectManager;
 import org.miaohong.newfishchatserver.core.rpc.server.RPCServer;
 import org.miaohong.newfishchatserver.gateway.config.GatewayServerConfig;
 import org.miaohong.newfishchatserver.proto.gateway.GatewayImpl;

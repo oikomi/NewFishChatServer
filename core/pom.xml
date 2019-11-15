@@ -56,34 +56,40 @@
 
         <!-- Protostuff -->
         <dependency>
-            <groupId>com.dyuproject.protostuff</groupId>
+            <groupId>io.protostuff</groupId>
             <artifactId>protostuff-core</artifactId>
-            <version>1.0.8</version>
+            <version>1.6.2</version>
         </dependency>
         <dependency>
-            <groupId>com.dyuproject.protostuff</groupId>
+            <groupId>io.protostuff</groupId>
             <artifactId>protostuff-runtime</artifactId>
-            <version>1.0.8</version>
+            <version>1.6.2</version>
         </dependency>
-
 
         <!-- Objenesis -->
         <dependency>
             <groupId>org.objenesis</groupId>
             <artifactId>objenesis</artifactId>
-            <version>2.1</version>
+            <version>3.1</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.10.3</version>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.9.6</version>
+            <version>2.10.1</version>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.9.6</version>
+            <version>2.10.1</version>
         </dependency>
 
         <dependency>
@@ -91,6 +97,18 @@
             <artifactId>cglib</artifactId>
             <version>3.2.12</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.miaohong.newfishchatserver</groupId>
+            <artifactId>annotations</artifactId>
+            <version>1.0</version>
+            <scope>compile</scope>
+        </dependency>
+
 
     </dependencies>
 

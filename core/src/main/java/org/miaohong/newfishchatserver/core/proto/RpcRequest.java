@@ -1,6 +1,7 @@
 package org.miaohong.newfishchatserver.core.proto;
 
 public class RpcRequest {
+
     private String requestId;
     private String className;
     private String methodName;

@@ -1,9 +1,11 @@
-package org.miaohong.newfishchatserver.core.rpc.client.proxy;
+package org.miaohong.newfishchatserver.core.rpc.client.proxy.jdk;
 
 import org.miaohong.newfishchatserver.core.proto.RpcRequest;
 import org.miaohong.newfishchatserver.core.rpc.client.ConnectManager;
 import org.miaohong.newfishchatserver.core.rpc.client.RPCFuture;
 import org.miaohong.newfishchatserver.core.rpc.client.RpcClientHandler;
+import org.miaohong.newfishchatserver.core.rpc.client.proxy.AbstractInvocationHandler;
+import org.miaohong.newfishchatserver.core.rpc.client.proxy.IAsyncObjectProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,19 +13,21 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-public class CallerInvocationHandler<T> implements InvocationHandler, IAsyncObjectProxy {
+public class JDKInvocationHandler<T> extends AbstractInvocationHandler implements InvocationHandler, IAsyncObjectProxy {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CallerInvocationHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JDKInvocationHandler.class);
     private Class<T> clazz;
 
-    public CallerInvocationHandler(Class<T> clazz) {
+    public JDKInvocationHandler(Class<T> clazz) {
         this.clazz = clazz;
     }
 
+
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (Object.class == method.getDeclaringClass()) {
+        if (isLocalMethod(method)) {
             String name = method.getName();
+            Class[] paramTypes = method.getParameterTypes();
             if ("equals".equals(name)) {
                 return proxy == args[0];
             } else if ("hashCode".equals(name)) {
@@ -37,13 +41,7 @@ public class CallerInvocationHandler<T> implements InvocationHandler, IAsyncObje
             }
         }
 
-        RpcRequest request = new RpcRequest();
-        request.setRequestId(UUID.randomUUID().toString());
-        request.setClassName(method.getDeclaringClass().getName());
-        request.setMethodName(method.getName());
-        request.setParameterTypes(method.getParameterTypes());
-        request.setParameters(args);
-        // Debug
+        RpcRequest request = buildRequest(method, args);
         LOG.debug(method.getDeclaringClass().getName());
         LOG.debug(method.getName());
 

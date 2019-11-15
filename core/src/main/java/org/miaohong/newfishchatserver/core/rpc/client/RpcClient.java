@@ -1,10 +1,11 @@
 package org.miaohong.newfishchatserver.core.rpc.client;
 
 
-import org.miaohong.newfishchatserver.core.rpc.client.proxy.CallerInvocationHandler;
+import org.miaohong.newfishchatserver.core.extension.ExtensionLoader;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.IAsyncObjectProxy;
-import org.miaohong.newfishchatserver.core.rpc.client.proxy.JdkProxyFactory;
+import org.miaohong.newfishchatserver.core.rpc.client.proxy.ProxyConstants;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.ProxyFactory;
+import org.miaohong.newfishchatserver.core.rpc.client.proxy.jdk.JDKInvocationHandler;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -13,12 +14,13 @@ import java.util.concurrent.TimeUnit;
 public class RpcClient implements Client {
 
     private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16,
-            600L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(65536));
+            600L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(65535));
     private String serverAddress;
 
-    private ProxyFactory proxyFactory = new JdkProxyFactory();
+    private ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension(ProxyFactory.class,
+            ProxyConstants.PROXY_BYTEBUDDY);
 
-    public RpcClient(String serverAddress) {
+    public RpcClient(String serverAddress) throws InstantiationException, IllegalAccessException {
         this.serverAddress = serverAddress;
     }
 
@@ -32,7 +34,7 @@ public class RpcClient implements Client {
     }
 
     public <T> IAsyncObjectProxy createAsync(Class<T> interfaceClass) {
-        return new CallerInvocationHandler<>(interfaceClass);
+        return new JDKInvocationHandler<>(interfaceClass);
     }
 
     public void stop() {

@@ -1,0 +1,3 @@
+
+org.miaohong.newfishchatserver.core.rpc.client.proxy.jdk.JdkProxyFactory
+org.miaohong.newfishchatserver.core.rpc.client.proxy.bytebuddy.BytebuddyProxyFactory

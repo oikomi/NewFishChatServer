@@ -6,4 +6,10 @@ public class GatewayImpl implements GatewayProto {
     public String test() {
         return "test";
     }
+
+    @Override
+    public Person person() {
+        Person person = new Person("zh", 11);
+        return person;
+    }
 }
