@@ -1,18 +1,18 @@
 package org.miaohong.newfishchatserver.core.conf;
 
 
-import org.miaohong.newfishchatserver.core.util.PropUtil;
+import org.miaohong.newfishchatserver.core.util.PropUtils;
 
 import java.util.Properties;
 
 public abstract class BaseConfig implements Config, java.io.Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 5429008745932219543L;
 
     private Properties properties;
 
     public BaseConfig() {
-        this.properties = PropUtil.loadProperties(getPropertiesPath());
+        this.properties = PropUtils.loadProperties(getPropertiesPath());
     }
 
     @Override
@@ -22,18 +22,18 @@ public abstract class BaseConfig implements Config, java.io.Serializable {
 
     @Override
     public int getInt(String propName, int defaultValue) {
-        return PropUtil.getIntValue(propName, defaultValue, properties);
+        return PropUtils.getIntValue(propName, defaultValue, properties);
     }
 
     @Override
     public long getLong(String propName, long defaultValue) {
-        return PropUtil.getLongValue(propName, defaultValue, properties);
+        return PropUtils.getLongValue(propName, defaultValue, properties);
     }
 
 
     @Override
     public boolean getBoolean(String propName, Boolean defaultValue) {
-        return PropUtil.getBooleanValue(propName, defaultValue, properties);
+        return PropUtils.getBooleanValue(propName, defaultValue, properties);
     }
 
 

@@ -28,3 +28,6 @@ Thumbs.db
 .idea
 package-lock.json
 release/
+
+#github
+.github

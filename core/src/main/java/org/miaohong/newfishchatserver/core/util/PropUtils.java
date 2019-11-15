@@ -9,11 +9,11 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
-public class PropUtil {
+public class PropUtils {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PropUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PropUtils.class);
 
-    private PropUtil() {
+    private PropUtils() {
 
     }
 
@@ -21,7 +21,7 @@ public class PropUtil {
         LOG.info("load properties from file: {}", path);
         Properties properties = new Properties();
         try {
-            InputStream in = PropUtil.class.getClassLoader().getResourceAsStream(path);
+            InputStream in = PropUtils.class.getClassLoader().getResourceAsStream(path);
             properties.load(in);
         } catch (Exception ex) {
             LOG.error("can not read properties from file: {}, msg: {}", path, ex.getMessage());
@@ -31,11 +31,11 @@ public class PropUtil {
 
 
     public static InputStream loadUrl(String path) {
-        return PropUtil.class.getClassLoader().getResourceAsStream(path);
+        return PropUtils.class.getClassLoader().getResourceAsStream(path);
     }
 
     public static boolean propertiesExist(String path) {
-        URL url = PropUtil.class.getClassLoader().getResource(path);
+        URL url = PropUtils.class.getClassLoader().getResource(path);
         return null != url;
     }
 

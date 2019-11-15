@@ -1,6 +1,7 @@
 package org.miaohong.newfishchatserver.core.rpc.server;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import org.miaohong.newfishchatserver.core.transport.NettyServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,18 +14,18 @@ public class RPCServer extends Server {
 
     private IServiceHandler serviceHandler;
 
-    public RPCServer(String bindAddr, int bindPort) {
+    public RPCServer(String serverName, String bindAddr, int bindPort) {
         serviceHandler = new RpcServiceHandler();
         try {
-            nettyServer = new NettyServer(bindAddr, bindPort, serviceHandler);
+            nettyServer = new NettyServer(serverName, bindAddr, bindPort, serviceHandler);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }
     }
 
     @Override
-    void setServerName() {
-        serverName = "rpc server";
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
     }
 
     @Override
@@ -34,6 +35,7 @@ public class RPCServer extends Server {
 
     @Override
     public void start() {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(serverName));
         Preconditions.checkArgument(nettyServer != null, "netty server is null");
         nettyServer.start();
     }

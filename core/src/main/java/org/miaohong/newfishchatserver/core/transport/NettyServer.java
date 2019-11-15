@@ -11,6 +11,9 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
+import org.miaohong.newfishchatserver.annotations.Internal;
 import org.miaohong.newfishchatserver.core.conf.CommonNettyConfig;
 import org.miaohong.newfishchatserver.core.execption.FatalExitExceptionHandler;
 import org.miaohong.newfishchatserver.core.rpc.server.IServiceHandler;
@@ -24,6 +27,7 @@ import java.util.concurrent.ThreadFactory;
 /**
  * core server implement with netty
  */
+@Internal
 public class NettyServer {
 
     private static final Logger LOG = LoggerFactory.getLogger(NettyServer.class);
@@ -43,9 +47,13 @@ public class NettyServer {
 
     private IServiceHandler serviceHandler;
 
-    public NettyServer(String serverAddr,
+    private String serverName;
+
+    public NettyServer(String serverName,
+                       String serverAddr,
                        int serverPort,
                        IServiceHandler serviceHandler) throws UnknownHostException {
+        this.serverName = serverName;
         this.serverNettyConfig = new ServerNettyConfig(serverAddr, serverPort, 10);
         this.commonNettyConfig = CommonNettyConfig.getINSTANCE();
         this.serviceHandler = serviceHandler;
@@ -88,19 +96,16 @@ public class NettyServer {
         setBootstrap();
 
         bindFuture = bootstrap.bind().syncUninterruptibly();
-        InetSocketAddress localAddress = (InetSocketAddress) bindFuture.channel().localAddress();
-        final long duration = System.currentTimeMillis() - start;
-        LOG.info("Successful initialization (took {} ms). Listening on SocketAddress {}.", duration, localAddress);
 
         ChannelFuture channelFuture = bindFuture.addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("Netty Server bind to {}:{} success!",
-                            serverNettyConfig.getServerAddress(), serverNettyConfig.getServerPort());
-                }
+                final long duration = System.currentTimeMillis() - start;
+                LOG.info("Netty Server[{}] bind to {}:{} success (took {} ms)!",
+                        serverName, serverNettyConfig.getServerAddress(), serverNettyConfig.getServerPort(), duration);
+
             } else {
-                LOG.error("Netty Server bind to {}:{} failed!",
-                        serverNettyConfig.getServerAddress(), serverNettyConfig.getServerPort());
+                LOG.error("Netty Server[{}] bind to {}:{} failed!",
+                        serverName, serverNettyConfig.getServerAddress(), serverNettyConfig.getServerPort());
                 shutdown();
             }
         });
@@ -108,26 +113,22 @@ public class NettyServer {
         channelFuture.channel().closeFuture().syncUninterruptibly();
     }
 
-    private void initEpollBootstrap() {
-        // Add the server port number to the name in order to distinguish
-        // multiple servers running on the same host.
-        String name = ServerNettyConfig.SERVER_THREAD_GROUP_NAME + " (" + serverNettyConfig.getServerPort() + ")";
-        EpollEventLoopGroup epollGroup = new EpollEventLoopGroup(serverNettyConfig.getServerNumThreads(), getNamedThreadFactory(name));
-        bootstrap.group(epollGroup).channel(EpollServerSocketChannel.class);
-    }
-
-
     private void initNioBootstrap() {
-        // Add the server port number to the name in order to distinguish
-        // multiple servers running on the same host.
         String name = ServerNettyConfig.SERVER_THREAD_GROUP_NAME + " (" + serverNettyConfig.getServerPort() + ")";
         NioEventLoopGroup nioGroup = new NioEventLoopGroup(serverNettyConfig.getServerNumThreads(), getNamedThreadFactory(name));
         bootstrap.group(nioGroup).channel(NioServerSocketChannel.class);
     }
 
+    private void initEpollBootstrap() {
+        String name = ServerNettyConfig.SERVER_THREAD_GROUP_NAME + " (" + serverNettyConfig.getServerPort() + ")";
+        EpollEventLoopGroup epollGroup = new EpollEventLoopGroup(serverNettyConfig.getServerNumThreads(), getNamedThreadFactory(name));
+        bootstrap.group(epollGroup).channel(EpollServerSocketChannel.class);
+    }
+
     private void setBootstrap() {
         bootstrap.localAddress(
                 new InetSocketAddress(serverNettyConfig.getServerAddress(), serverNettyConfig.getServerPort()))
+                .handler(new LoggingHandler(LogLevel.INFO))
                 .childHandler(new ServerchannelInitializer(serviceHandler))
                 .option(ChannelOption.SO_BACKLOG, commonNettyConfig.getChannelOptionForSOBACKLOG())
                 .option(ChannelOption.SO_REUSEADDR, commonNettyConfig.getChannelOptionForSOREUSEADDR())
