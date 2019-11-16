@@ -1,7 +1,7 @@
 package org.miaohong.newfishchatserver.core.extension;
 
 import org.junit.Test;
-import org.miaohong.newfishchatserver.core.proto.serialize.Serialization;
+import org.miaohong.newfishchatserver.core.rpc.proto.serialize.Serialization;
 
 public class ExtensionLoaderTest {
 

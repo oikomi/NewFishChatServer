@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.proto.serialize;
+package org.miaohong.newfishchatserver.core.rpc.proto.serialize;
 
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtostuffIOUtil;

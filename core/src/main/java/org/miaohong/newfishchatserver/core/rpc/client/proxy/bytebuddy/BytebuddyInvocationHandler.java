@@ -4,7 +4,7 @@ import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.This;
-import org.miaohong.newfishchatserver.core.proto.RpcRequest;
+import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 import org.miaohong.newfishchatserver.core.rpc.client.ConnectManager;
 import org.miaohong.newfishchatserver.core.rpc.client.RPCFuture;
 import org.miaohong.newfishchatserver.core.rpc.client.RpcClientHandler;

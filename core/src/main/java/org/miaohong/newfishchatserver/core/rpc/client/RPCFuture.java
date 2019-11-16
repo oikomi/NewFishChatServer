@@ -1,7 +1,7 @@
 package org.miaohong.newfishchatserver.core.rpc.client;
 
-import org.miaohong.newfishchatserver.core.proto.RpcRequest;
-import org.miaohong.newfishchatserver.core.proto.RpcResponse;
+import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
+import org.miaohong.newfishchatserver.core.rpc.proto.RpcResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

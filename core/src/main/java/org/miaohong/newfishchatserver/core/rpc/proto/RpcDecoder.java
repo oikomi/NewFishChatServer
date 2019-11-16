@@ -1,10 +1,10 @@
-package org.miaohong.newfishchatserver.core.proto;
+package org.miaohong.newfishchatserver.core.rpc.proto;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import org.miaohong.newfishchatserver.core.extension.ExtensionLoader;
-import org.miaohong.newfishchatserver.core.proto.serialize.Serialization;
+import org.miaohong.newfishchatserver.core.rpc.proto.serialize.Serialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

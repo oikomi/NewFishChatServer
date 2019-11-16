@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import org.miaohong.newfishchatserver.core.metric.MetricRegistryImpl;
 import org.miaohong.newfishchatserver.core.metric.metricgroup.ServerMetricGroup;
-import org.miaohong.newfishchatserver.core.transport.NettyServer;
+import org.miaohong.newfishchatserver.core.rpc.transport.NettyServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

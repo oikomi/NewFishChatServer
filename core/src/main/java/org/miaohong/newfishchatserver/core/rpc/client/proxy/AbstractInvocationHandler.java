@@ -1,6 +1,6 @@
 package org.miaohong.newfishchatserver.core.rpc.client.proxy;
 
-import org.miaohong.newfishchatserver.core.proto.RpcRequest;
+import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 
 import java.lang.reflect.Method;
 import java.util.UUID;

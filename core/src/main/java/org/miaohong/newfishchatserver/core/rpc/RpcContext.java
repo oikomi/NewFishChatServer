@@ -2,8 +2,8 @@ package org.miaohong.newfishchatserver.core.rpc;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.miaohong.newfishchatserver.core.proto.RpcRequest;
-import org.miaohong.newfishchatserver.core.proto.RpcResponse;
+import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
+import org.miaohong.newfishchatserver.core.rpc.proto.RpcResponse;
 
 import java.util.HashMap;
 import java.util.Map;

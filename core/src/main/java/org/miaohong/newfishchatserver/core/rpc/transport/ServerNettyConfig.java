@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.transport;
+package org.miaohong.newfishchatserver.core.rpc.transport;
 
 import com.google.common.base.Preconditions;
 import lombok.Data;

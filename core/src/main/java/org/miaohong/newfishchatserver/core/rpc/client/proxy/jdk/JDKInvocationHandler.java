@@ -1,6 +1,6 @@
 package org.miaohong.newfishchatserver.core.rpc.client.proxy.jdk;
 
-import org.miaohong.newfishchatserver.core.proto.RpcRequest;
+import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 import org.miaohong.newfishchatserver.core.rpc.client.ConnectManager;
 import org.miaohong.newfishchatserver.core.rpc.client.RPCFuture;
 import org.miaohong.newfishchatserver.core.rpc.client.RpcClientHandler;

@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.proto;
+package org.miaohong.newfishchatserver.core.rpc.proto;
 
 public class RpcRequest {
 
