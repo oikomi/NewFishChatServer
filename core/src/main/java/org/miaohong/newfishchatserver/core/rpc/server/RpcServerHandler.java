@@ -6,10 +6,10 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.miaohong.newfishchatserver.core.metric.Counter;
 import org.miaohong.newfishchatserver.core.metric.MetricGroup;
 import org.miaohong.newfishchatserver.core.metric.SimpleCounter;
-import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
-import org.miaohong.newfishchatserver.core.rpc.proto.RpcResponse;
 import org.miaohong.newfishchatserver.core.rpc.RpcContext;
 import org.miaohong.newfishchatserver.core.rpc.RpcHandler;
+import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
+import org.miaohong.newfishchatserver.core.rpc.proto.RpcResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,17 +27,21 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> im
     private MetricGroup serverMetricGroup;
 
     public RpcServerHandler(IServiceHandler serviceHandler, MetricGroup serverMetricGroup) {
+        LOG.info("enter RpcServerHandler");
         this.serviceHandler = serviceHandler;
         this.serverMetricGroup = serverMetricGroup;
         if (this.recordRequestNum == null) {
             this.recordRequestNum = new SimpleCounter();
         }
+        //FIXME
+        this.serverMetricGroup.counter("record-request-num", this.recordRequestNum);
+
     }
 
     @Override
     public void channelRead0(final ChannelHandlerContext ctx, final RpcRequest request) {
         LOG.info("Receive request {}", request.getRequestId());
-        this.serverMetricGroup.counter("record-request-num", this.recordRequestNum);
+        this.recordRequestNum.inc();
         RpcResponse response = new RpcResponse();
         response.setRequestId(request.getRequestId());
         try {

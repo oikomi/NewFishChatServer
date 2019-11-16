@@ -4,11 +4,11 @@ import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.This;
-import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 import org.miaohong.newfishchatserver.core.rpc.client.ConnectManager;
 import org.miaohong.newfishchatserver.core.rpc.client.RPCFuture;
 import org.miaohong.newfishchatserver.core.rpc.client.RpcClientHandler;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.AbstractInvocationHandler;
+import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

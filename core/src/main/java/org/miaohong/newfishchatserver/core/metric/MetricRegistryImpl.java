@@ -1,6 +1,6 @@
 package org.miaohong.newfishchatserver.core.metric;
 
-import com.google.common.collect.Lists;
+import org.miaohong.newfishchatserver.core.extension.ExtensionLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,10 +14,11 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     private static final Logger LOG = LoggerFactory.getLogger(MetricRegistryImpl.class);
 
-    private final List<MetricReporter> reporters = Lists.newArrayList();
+    private final List<MetricReporter> reporters;
     private final ScheduledExecutorService executor;
 
     public MetricRegistryImpl() {
+        this.reporters = ExtensionLoader.getExtensionLoader(MetricReporter.class).getAllExtension(MetricReporter.class);
         this.executor = Executors.newSingleThreadScheduledExecutor();
 
         for (MetricReporter reporterInstance : reporters) {

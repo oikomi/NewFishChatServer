@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.rpc.transport;
+package org.miaohong.newfishchatserver.core.rpc.server.transport;
 
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -37,6 +37,7 @@ public class NettyServer {
             new ThreadFactoryBuilder()
                     .setDaemon(true)
                     .setUncaughtExceptionHandler(FatalExitExceptionHandler.INSTANCE);
+
     private final ServerNettyConfig serverNettyConfig;
     private final CommonNettyConfig commonNettyConfig;
     private String serverName;
@@ -134,9 +135,13 @@ public class NettyServer {
                 .option(ChannelOption.SO_BACKLOG, commonNettyConfig.getChannelOptionForSOBACKLOG())
                 .option(ChannelOption.SO_REUSEADDR, commonNettyConfig.getChannelOptionForSOREUSEADDR())
                 .childOption(ChannelOption.SO_KEEPALIVE, commonNettyConfig.getChannelOptionForSOKEEPALIVE())
-                .childOption(ChannelOption.TCP_NODELAY, commonNettyConfig.getgetChannelOptionForTCPNODELAY())
-                .childOption(ChannelOption.SO_SNDBUF, commonNettyConfig.getChannelOptionForSOSNDBUF())
-                .childOption(ChannelOption.SO_RCVBUF, commonNettyConfig.getChannelOptionForSORCVBUF());
+                .childOption(ChannelOption.TCP_NODELAY, commonNettyConfig.getgetChannelOptionForTCPNODELAY());
+        if (commonNettyConfig.getChannelOptionForSOSNDBUF() > 0) {
+            bootstrap.childOption(ChannelOption.SO_SNDBUF, commonNettyConfig.getChannelOptionForSOSNDBUF());
+        }
+        if (commonNettyConfig.getChannelOptionForSORCVBUF() > 0) {
+            bootstrap.childOption(ChannelOption.SO_RCVBUF, commonNettyConfig.getChannelOptionForSORCVBUF());
+        }
     }
 
     public void start() {

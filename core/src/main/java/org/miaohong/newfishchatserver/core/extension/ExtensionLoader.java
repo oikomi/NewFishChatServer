@@ -1,12 +1,14 @@
 package org.miaohong.newfishchatserver.core.extension;
 
 
+import com.google.common.collect.Lists;
 import org.miaohong.newfishchatserver.annotations.Spi;
 import org.miaohong.newfishchatserver.annotations.SpiMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
@@ -92,7 +94,7 @@ public class ExtensionLoader<T> {
         failThrows(type, url + ":" + line + ": " + msg);
     }
 
-    public T getExtension(Class<T> clz, String name) throws IllegalAccessException, InstantiationException {
+    public T getExtension(Class<T> clz, String name) {
         if (extensionClasses.containsKey(name)) {
             return extensionClasses.get(name);
         } else {
@@ -105,5 +107,16 @@ public class ExtensionLoader<T> {
 
         return extensionClasses.get(name);
     }
+
+    public List<T> getAllExtension(Class<T> clz) {
+        ServiceLoader<T> ss = ServiceLoader.load(clz);
+        for (T s : ss) {
+            String extensionName = s.getClass().getAnnotation(SpiMeta.class).name();
+            extensionClasses.putIfAbsent(extensionName, s);
+        }
+
+        return Lists.newArrayList(extensionClasses.values());
+    }
+
 
 }

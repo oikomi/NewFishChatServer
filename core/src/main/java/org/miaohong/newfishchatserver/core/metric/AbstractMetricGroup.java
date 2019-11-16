@@ -10,7 +10,7 @@ public abstract class AbstractMetricGroup implements MetricGroup {
     private MetricRegistry register;
 
     protected AbstractMetricGroup(MetricRegistry register) {
-
+        this.register = register;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.miaohong.newfishchatserver.core.metric.reporter;
 
+import org.miaohong.newfishchatserver.annotations.SpiMeta;
 import org.miaohong.newfishchatserver.core.metric.AbstractReporter;
 import org.miaohong.newfishchatserver.core.metric.Counter;
 import org.miaohong.newfishchatserver.core.metric.Scheduled;
@@ -9,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ConcurrentModificationException;
 import java.util.Map;
 
+
+@SpiMeta(name = "slf4j")
 public class Slf4jReporter extends AbstractReporter implements Scheduled {
 
     private static final Logger LOG = LoggerFactory.getLogger(Slf4jReporter.class);
