@@ -2,6 +2,8 @@ package org.miaohong.newfishchatserver.core.rpc.server;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import org.miaohong.newfishchatserver.core.metric.MetricRegistryImpl;
+import org.miaohong.newfishchatserver.core.metric.metricgroup.ServerMetricGroup;
 import org.miaohong.newfishchatserver.core.transport.NettyServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +16,12 @@ public class RPCServer extends Server {
 
     private IServiceHandler serviceHandler;
 
+
     public RPCServer(String serverName, String bindAddr, int bindPort) {
         serviceHandler = new RpcServiceHandler();
         try {
-            nettyServer = new NettyServer(serverName, bindAddr, bindPort, serviceHandler);
+            nettyServer = new NettyServer(serverName, bindAddr, bindPort,
+                    serviceHandler, new ServerMetricGroup(new MetricRegistryImpl()));
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }
@@ -35,7 +39,7 @@ public class RPCServer extends Server {
 
     @Override
     public void start() {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(serverName));
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(serverName), "server name is null");
         Preconditions.checkArgument(nettyServer != null, "netty server is null");
         nettyServer.start();
     }
@@ -44,4 +48,5 @@ public class RPCServer extends Server {
     public void shutDown() {
         nettyServer.shutdown();
     }
+
 }

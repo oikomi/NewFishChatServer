@@ -16,6 +16,7 @@ import io.netty.handler.logging.LoggingHandler;
 import org.miaohong.newfishchatserver.annotations.Internal;
 import org.miaohong.newfishchatserver.core.conf.CommonNettyConfig;
 import org.miaohong.newfishchatserver.core.execption.FatalExitExceptionHandler;
+import org.miaohong.newfishchatserver.core.metric.MetricGroup;
 import org.miaohong.newfishchatserver.core.rpc.server.IServiceHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,27 +37,27 @@ public class NettyServer {
             new ThreadFactoryBuilder()
                     .setDaemon(true)
                     .setUncaughtExceptionHandler(FatalExitExceptionHandler.INSTANCE);
-
     private final ServerNettyConfig serverNettyConfig;
-
     private final CommonNettyConfig commonNettyConfig;
-
+    private String serverName;
     private ServerBootstrap bootstrap;
 
     private ChannelFuture bindFuture;
 
     private IServiceHandler serviceHandler;
 
-    private String serverName;
+    private MetricGroup serverMetricGroup;
 
     public NettyServer(String serverName,
                        String serverAddr,
                        int serverPort,
-                       IServiceHandler serviceHandler) throws UnknownHostException {
+                       IServiceHandler serviceHandler,
+                       MetricGroup serverMetricGroup) throws UnknownHostException {
         this.serverName = serverName;
         this.serverNettyConfig = new ServerNettyConfig(serverAddr, serverPort, 10);
         this.commonNettyConfig = CommonNettyConfig.getINSTANCE();
         this.serviceHandler = serviceHandler;
+        this.serverMetricGroup = serverMetricGroup;
     }
 
     private static ThreadFactory getNamedThreadFactory(String name) {
@@ -129,7 +130,7 @@ public class NettyServer {
         bootstrap.localAddress(
                 new InetSocketAddress(serverNettyConfig.getServerAddress(), serverNettyConfig.getServerPort()))
                 .handler(new LoggingHandler(LogLevel.INFO))
-                .childHandler(new ServerchannelInitializer(serviceHandler))
+                .childHandler(new ServerchannelInitializer(serviceHandler, serverMetricGroup))
                 .option(ChannelOption.SO_BACKLOG, commonNettyConfig.getChannelOptionForSOBACKLOG())
                 .option(ChannelOption.SO_REUSEADDR, commonNettyConfig.getChannelOptionForSOREUSEADDR())
                 .childOption(ChannelOption.SO_KEEPALIVE, commonNettyConfig.getChannelOptionForSOKEEPALIVE())
