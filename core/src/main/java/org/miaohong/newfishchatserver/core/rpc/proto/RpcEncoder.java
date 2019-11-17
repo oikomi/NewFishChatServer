@@ -15,6 +15,7 @@ public class RpcEncoder extends MessageToByteEncoder {
     private Class<?> genericClass;
 
     public RpcEncoder(Class<?> genericClass) {
+        LOG.info("enter RpcEncoder");
         this.genericClass = genericClass;
     }
 

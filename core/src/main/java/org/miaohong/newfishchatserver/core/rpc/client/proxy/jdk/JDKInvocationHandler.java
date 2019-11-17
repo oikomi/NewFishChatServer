@@ -1,5 +1,6 @@
 package org.miaohong.newfishchatserver.core.rpc.client.proxy.jdk;
 
+import org.miaohong.newfishchatserver.annotations.Internal;
 import org.miaohong.newfishchatserver.core.rpc.client.ConnectManager;
 import org.miaohong.newfishchatserver.core.rpc.client.RPCFuture;
 import org.miaohong.newfishchatserver.core.rpc.client.RpcClientHandler;
@@ -13,6 +14,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
+@Internal
 public class JDKInvocationHandler<T> extends AbstractInvocationHandler implements InvocationHandler, IAsyncObjectProxy {
 
     private static final Logger LOG = LoggerFactory.getLogger(JDKInvocationHandler.class);

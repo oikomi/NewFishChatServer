@@ -17,6 +17,7 @@ public class RpcDecoder extends ByteToMessageDecoder {
     private Class<?> genericClass;
 
     public RpcDecoder(Class<?> genericClass) {
+        LOG.info("enter RpcDecoder");
         this.genericClass = genericClass;
     }
 

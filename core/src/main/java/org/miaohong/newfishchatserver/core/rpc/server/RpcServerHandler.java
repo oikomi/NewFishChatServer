@@ -38,10 +38,32 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> im
 
     }
 
+
+    @Override
+    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+        super.channelRegistered(ctx);
+        this.recordRequestNum.inc();
+
+    }
+
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+        super.channelUnregistered(ctx);
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+    }
+
     @Override
     public void channelRead0(final ChannelHandlerContext ctx, final RpcRequest request) {
         LOG.info("Receive request {}", request.getRequestId());
-        this.recordRequestNum.inc();
         RpcResponse response = new RpcResponse();
         response.setRequestId(request.getRequestId());
         try {

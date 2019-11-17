@@ -2,6 +2,8 @@ package org.miaohong.newfishchatserver.core.rpc.server;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import org.miaohong.newfishchatserver.core.execption.CoreErrorMsgConstant;
+import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
 import org.miaohong.newfishchatserver.core.metric.MetricRegistryImpl;
 import org.miaohong.newfishchatserver.core.metric.metricgroup.ServerMetricGroup;
 import org.miaohong.newfishchatserver.core.rpc.server.transport.NettyServer;
@@ -16,7 +18,6 @@ public class RPCServer extends Server {
 
     private IServiceHandler serviceHandler;
 
-
     public RPCServer(String serverName, String bindAddr, int bindPort) {
         serviceHandler = new RpcServiceHandler();
         try {
@@ -24,6 +25,7 @@ public class RPCServer extends Server {
                     serviceHandler, new ServerMetricGroup(new MetricRegistryImpl()));
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
+            throw new ServerCoreException(e, CoreErrorMsgConstant.SERVER_DEFAULT_ERROR);
         }
     }
 
