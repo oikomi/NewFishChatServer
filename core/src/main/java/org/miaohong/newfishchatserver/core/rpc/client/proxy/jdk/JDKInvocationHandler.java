@@ -1,7 +1,7 @@
 package org.miaohong.newfishchatserver.core.rpc.client.proxy.jdk;
 
 import org.miaohong.newfishchatserver.annotations.Internal;
-import org.miaohong.newfishchatserver.core.rpc.client.ConnectManager;
+import org.miaohong.newfishchatserver.core.rpc.client.ConnectionManager;
 import org.miaohong.newfishchatserver.core.rpc.client.RPCFuture;
 import org.miaohong.newfishchatserver.core.rpc.client.RpcClientHandler;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.AbstractInvocationHandler;
@@ -57,7 +57,7 @@ public class JDKInvocationHandler<T> extends AbstractInvocationHandler implement
 
         LOG.info("send rpc");
 
-        RpcClientHandler handler = ConnectManager.getInstance().chooseHandler();
+        RpcClientHandler handler = ConnectionManager.getINSTANCE().chooseHandler();
 
         LOG.info("choose handler");
 
@@ -68,7 +68,7 @@ public class JDKInvocationHandler<T> extends AbstractInvocationHandler implement
 
     @Override
     public RPCFuture call(String funcName, Object... args) {
-        RpcClientHandler handler = ConnectManager.getInstance().chooseHandler();
+        RpcClientHandler handler = ConnectionManager.getINSTANCE().chooseHandler();
         RpcRequest request = createRequest(this.clazz.getName(), funcName, args);
         return handler.sendRequest(request);
     }

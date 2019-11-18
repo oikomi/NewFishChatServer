@@ -81,7 +81,7 @@ public class RPCFuture implements Future<Object> {
         // Threshold
         long responseTime = System.currentTimeMillis() - startTime;
         if (responseTime > this.responseTimeThreshold) {
-            LOG.warn("Service response time is too slow. Request id = " + reponse.getRequestId() + ". Response Time = " + responseTime + "ms");
+            LOG.warn("Service response time is too slow. Request id = {}", reponse.getRequestId() + ". Response Time = " + responseTime + "ms");
         }
     }
 

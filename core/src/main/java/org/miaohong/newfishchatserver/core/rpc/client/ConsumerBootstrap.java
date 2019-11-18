@@ -1,20 +1,12 @@
 package org.miaohong.newfishchatserver.core.rpc.client;
 
 import com.google.common.base.Preconditions;
-import org.miaohong.newfishchatserver.core.extension.ExtensionLoader;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.ProxyConstants;
-import org.miaohong.newfishchatserver.core.rpc.client.proxy.ProxyFactory;
 
-public class ConsumerBootstrap<T> {
-
-    private T proxyInstance;
-    private ConsumerConfig<T> config;
-    private ProxyFactory proxyFactory;
+public class ConsumerBootstrap<T> extends AbstractConsumerBootstrap<T> {
 
     public ConsumerBootstrap(ConsumerConfig<T> config) {
-        this.config = config;
-        proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).
-                getExtension(ProxyFactory.class, this.config.getProxy());
+        super(config);
     }
 
     private boolean checkProxy() {
@@ -29,7 +21,7 @@ public class ConsumerBootstrap<T> {
 
         Preconditions.checkState(checkProxy(), "rpc client proxy must be jdk or bytebuddy");
         Preconditions.checkNotNull(proxyFactory);
-        proxyInstance = proxyFactory.getProxy(config.getProxyClass());
+        proxyInstance = (T) proxyFactory.getProxy(config.getProxyClass());
 
         return proxyInstance;
     }

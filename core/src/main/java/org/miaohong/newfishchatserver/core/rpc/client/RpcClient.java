@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 public class RpcClient<T> implements Client {
 
     private static final Logger LOG = LoggerFactory.getLogger(RpcClient.class);
+
     private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16,
             600L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(65535));
 
@@ -37,7 +38,7 @@ public class RpcClient<T> implements Client {
 
     public void stop() {
         threadPoolExecutor.shutdown();
-        ConnectManager.getInstance().stop();
+        ConnectionManager.getINSTANCE().stop();
     }
 
     @Override

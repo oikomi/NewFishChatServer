@@ -1,6 +1,6 @@
 package org.miaohong.newfishchatserver.client.client;
 
-import org.miaohong.newfishchatserver.core.rpc.client.ConnectManager;
+import org.miaohong.newfishchatserver.core.rpc.client.ConnectionManager;
 import org.miaohong.newfishchatserver.core.rpc.client.ConsumerConfig;
 import org.miaohong.newfishchatserver.core.rpc.client.RpcClient;
 import org.miaohong.newfishchatserver.proto.gateway.GatewayProto;
@@ -22,7 +22,7 @@ public class Client {
         consumerConfig.setInterfaceId(GatewayProto.class.getName());
         RpcClient<GatewayProto> rpcClient = new RpcClient<>("127.0.0.1:15000", consumerConfig);
 
-        ConnectManager.getInstance().updateConnectedServer(Collections.singletonList("127.0.0.1:15000"));
+        ConnectionManager.getINSTANCE().updateConnectedServer(Collections.singletonList("127.0.0.1:15000"));
         GatewayProto s = rpcClient.refer();
         Person person = s.person();
         System.out.println(person);

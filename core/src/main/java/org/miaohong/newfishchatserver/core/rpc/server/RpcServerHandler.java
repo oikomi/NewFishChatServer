@@ -20,7 +20,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> im
 
     private static final Logger LOG = LoggerFactory.getLogger(RpcServerHandler.class);
 
-    private transient Counter recordRequestNum;
+    private Counter recordRequestNum;
 
     private IServiceHandler serviceHandler;
 

@@ -1,4 +1,12 @@
 package org.miaohong.newfishchatserver.core.rpc.registry;
 
-public interface Register {
+public abstract class Register {
+    protected RegistryConfig registryConfig;
+
+    public Register(RegistryConfig registryConfig) {
+        this.registryConfig = registryConfig;
+    }
+
+    protected abstract boolean start();
+
 }
