@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
-public class PropUtils {
+public final class PropUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(PropUtils.class);
 
@@ -52,7 +52,7 @@ public class PropUtils {
                 value = Integer.parseInt(valueString);
             } catch (Exception ex) {
                 LOG.error("failed to convert {} value: {}, used default value: {}",
-                        key, valueString, defaultValue);
+                        key, valueString, defaultValue, ex);
             }
         }
         return value;
@@ -75,7 +75,7 @@ public class PropUtils {
                 value = Long.parseLong(valueString);
             } catch (Exception ex) {
                 LOG.error("failed to convert {} value: {}, used default value: {}",
-                        key, valueString, defaultValue);
+                        key, valueString, defaultValue, ex);
             }
         }
         return value;
@@ -94,7 +94,7 @@ public class PropUtils {
                 value = Boolean.parseBoolean(valueString);
             } catch (Exception ex) {
                 LOG.error("failed to convert {} value: {}, used default value: {}",
-                        key, valueString, defaultValue);
+                        key, valueString, defaultValue, ex);
             }
         }
         return value;

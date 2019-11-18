@@ -1,32 +1,21 @@
 package org.miaohong.newfishchatserver.core.execption;
 
+import lombok.Data;
+
 import java.io.Serializable;
 
+@Data
 public class CoreErrorMsg implements Serializable {
 
-    private static final long serialVersionUID = 5688688468614074520L;
+    private static final long serialVersionUID = 5954565648909663307L;
 
     private int status;
-    private int errorcode;
+    private int errorCode;
     private String message;
 
-    public CoreErrorMsg(int status, int errorcode, String message) {
+    public CoreErrorMsg(int status, int errorCode, String message) {
         this.status = status;
-        this.errorcode = errorcode;
+        this.errorCode = errorCode;
         this.message = message;
     }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public int getErrorCode() {
-        return errorcode;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-
 }

@@ -14,6 +14,7 @@ public class ServerNettyConfig {
     public static final String SERVER_THREAD_GROUP_NAME = "Netty Server";
     public static final String CLIENT_THREAD_GROUP_NAME = "Netty Client";
     private static final Logger LOG = LoggerFactory.getLogger(ServerNettyConfig.class);
+    private static final int MAX_PORT = 65535;
     private final InetAddress serverAddress;
     private final int serverNumThreads;
     private final int serverPort;
@@ -23,7 +24,7 @@ public class ServerNettyConfig {
             int serverPort,
             int serverNumThreads) throws UnknownHostException {
         serverAddress = InetAddress.getByName(serverAddr);
-        Preconditions.checkArgument(serverPort >= 0 && serverPort <= 65535, "Invalid port number.");
+        Preconditions.checkArgument(serverPort >= 0 && serverPort <= MAX_PORT, "Invalid port number.");
         this.serverPort = serverPort;
         this.serverNumThreads = serverNumThreads;
     }

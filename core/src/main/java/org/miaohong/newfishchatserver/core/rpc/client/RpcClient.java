@@ -1,11 +1,6 @@
 package org.miaohong.newfishchatserver.core.rpc.client;
 
 
-import org.miaohong.newfishchatserver.core.extension.ExtensionLoader;
-import org.miaohong.newfishchatserver.core.rpc.client.proxy.IAsyncObjectProxy;
-import org.miaohong.newfishchatserver.core.rpc.client.proxy.ProxyConstants;
-import org.miaohong.newfishchatserver.core.rpc.client.proxy.ProxyFactory;
-import org.miaohong.newfishchatserver.core.rpc.client.proxy.jdk.JDKInvocationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,31 +8,31 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class RpcClient implements Client {
+public class RpcClient<T> implements Client {
 
     private static final Logger LOG = LoggerFactory.getLogger(RpcClient.class);
-
     private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16,
             600L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(65535));
+
     private String serverAddress;
 
-    private ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension(ProxyFactory.class,
-            ProxyConstants.PROXY_BYTEBUDDY);
+    private ConsumerConfig<T> consumerConfig;
 
-    public RpcClient(String serverAddress) throws InstantiationException, IllegalAccessException {
+    private ConsumerBootstrap<T> consumerBootstrap;
+
+    public RpcClient(String serverAddress, ConsumerConfig<T> consumerConfig) {
         this.serverAddress = serverAddress;
+        this.consumerConfig = consumerConfig;
+        this.consumerBootstrap = new ConsumerBootstrap<>(this.consumerConfig);
     }
 
     public static void submit(Runnable task) {
         threadPoolExecutor.submit(task);
     }
 
-    public <T> T getProxy(Class<T> interfaceClass) {
-        return proxyFactory.getProxy(interfaceClass);
-    }
-
-    public <T> IAsyncObjectProxy createAsync(Class<T> interfaceClass) {
-        return new JDKInvocationHandler<>(interfaceClass);
+    public T refer() {
+        LOG.info("client do refer");
+        return consumerBootstrap.refer();
     }
 
     public void stop() {

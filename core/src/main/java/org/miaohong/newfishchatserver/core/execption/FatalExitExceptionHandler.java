@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FatalExitExceptionHandler implements Thread.UncaughtExceptionHandler {
+
     public static final FatalExitExceptionHandler INSTANCE = new FatalExitExceptionHandler();
     private static final Logger LOG = LoggerFactory.getLogger(FatalExitExceptionHandler.class);
 

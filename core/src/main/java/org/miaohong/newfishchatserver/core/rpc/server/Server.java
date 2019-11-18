@@ -17,5 +17,4 @@ public abstract class Server implements LifeCycle {
      */
     abstract void addService(String interfaceName, Object serviceBean);
 
-
 }

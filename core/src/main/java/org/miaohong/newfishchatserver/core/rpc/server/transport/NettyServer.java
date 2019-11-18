@@ -16,6 +16,7 @@ import io.netty.handler.logging.LoggingHandler;
 import org.miaohong.newfishchatserver.annotations.Internal;
 import org.miaohong.newfishchatserver.core.conf.CommonNettyConfig;
 import org.miaohong.newfishchatserver.core.execption.FatalExitExceptionHandler;
+import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
 import org.miaohong.newfishchatserver.core.metric.MetricGroup;
 import org.miaohong.newfishchatserver.core.rpc.server.IServiceHandler;
 import org.slf4j.Logger;
@@ -65,36 +66,19 @@ public class NettyServer {
         return THREAD_FACTORY_BUILDER.setNameFormat(name + "Thread %d").build();
     }
 
-    private void init() {
+    private void initCheck() {
         Preconditions.checkState(bootstrap == null, "Netty server has already been initialized.");
         Preconditions.checkNotNull(serverNettyConfig);
         Preconditions.checkNotNull(commonNettyConfig);
+        Preconditions.checkNotNull(serverMetricGroup);
+    }
+
+    private void init() {
+        initCheck();
+
         final long start = System.currentTimeMillis();
 
-        bootstrap = new ServerBootstrap();
-        switch (commonNettyConfig.getTransportType()) {
-            case NIO:
-                initNioBootstrap();
-                break;
-
-            case EPOLL:
-                // only in linux server
-                initEpollBootstrap();
-                break;
-
-            case AUTO:
-                if (Epoll.isAvailable()) {
-                    initEpollBootstrap();
-                    LOG.info("Transport type 'auto': using EPOLL.");
-                } else {
-                    initNioBootstrap();
-                    LOG.info("Transport type 'auto': using NIO.");
-                }
-                break;
-            default:
-                throw new RuntimeException("Not support type");
-        }
-
+        initBootstrap();
         setBootstrap();
 
         bindFuture = bootstrap.bind().syncUninterruptibly();
@@ -115,6 +99,30 @@ public class NettyServer {
         channelFuture.channel().closeFuture().syncUninterruptibly();
     }
 
+    private void initBootstrap() {
+        bootstrap = new ServerBootstrap();
+        switch (commonNettyConfig.getTransportType()) {
+            case NIO:
+                initNioBootstrap();
+                break;
+            case EPOLL:
+                // only in linux server
+                initEpollBootstrap();
+                break;
+            case AUTO:
+                if (Epoll.isAvailable()) {
+                    initEpollBootstrap();
+                    LOG.info("Transport type 'auto': using EPOLL.");
+                } else {
+                    initNioBootstrap();
+                    LOG.info("Transport type 'auto': using NIO.");
+                }
+                break;
+            default:
+                throw new ServerCoreException("Not support type");
+        }
+    }
+
     private void initNioBootstrap() {
         String name = ServerNettyConfig.SERVER_THREAD_GROUP_NAME + " (" + serverNettyConfig.getServerPort() + ")";
         NioEventLoopGroup nioGroup = new NioEventLoopGroup(serverNettyConfig.getServerNumThreads(), getNamedThreadFactory(name));
@@ -123,7 +131,8 @@ public class NettyServer {
 
     private void initEpollBootstrap() {
         String name = ServerNettyConfig.SERVER_THREAD_GROUP_NAME + " (" + serverNettyConfig.getServerPort() + ")";
-        EpollEventLoopGroup epollGroup = new EpollEventLoopGroup(serverNettyConfig.getServerNumThreads(), getNamedThreadFactory(name));
+        EpollEventLoopGroup epollGroup = new EpollEventLoopGroup(serverNettyConfig.getServerNumThreads(),
+                getNamedThreadFactory(name));
         bootstrap.group(epollGroup).channel(EpollServerSocketChannel.class);
     }
 

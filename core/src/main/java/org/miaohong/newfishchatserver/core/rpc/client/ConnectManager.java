@@ -30,7 +30,7 @@ public class ConnectManager {
 
     private static ConnectManager connectManager;
     private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16,
-            600L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(65536));
+            600L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(65536));
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
     private CopyOnWriteArrayList<RpcClientHandler> connectedHandlers = new CopyOnWriteArrayList<>();
     private Map<InetSocketAddress, RpcClientHandler> connectedServerNodes = new ConcurrentHashMap<>();

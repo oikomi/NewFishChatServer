@@ -22,5 +22,4 @@ public abstract class AbstractInvocationHandler {
         return request;
     }
 
-
 }

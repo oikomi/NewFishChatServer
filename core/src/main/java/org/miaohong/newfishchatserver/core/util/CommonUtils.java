@@ -3,7 +3,10 @@ package org.miaohong.newfishchatserver.core.util;
 import java.util.Collection;
 import java.util.Map;
 
-public class CommonUtils {
+public final class CommonUtils {
+
+    private CommonUtils() {
+    }
 
     public static boolean isNotEmpty(Collection collection) {
         return collection != null && !collection.isEmpty();

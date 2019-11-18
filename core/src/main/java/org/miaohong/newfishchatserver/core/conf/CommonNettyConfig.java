@@ -3,7 +3,7 @@ package org.miaohong.newfishchatserver.core.conf;
 
 public class CommonNettyConfig extends BaseConfig {
 
-    private static final String NETTY_PROP_NAME = "netty.properties";
+    private static final String NETTY_PROP_NAME = "config/netty.properties";
 
     private CommonNettyConfig() {
     }

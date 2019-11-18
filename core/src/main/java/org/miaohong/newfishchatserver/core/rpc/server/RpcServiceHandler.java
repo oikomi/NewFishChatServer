@@ -23,8 +23,8 @@ public class RpcServiceHandler implements IServiceHandler {
     }
 
     @Override
-    public Object get(String className) {
-        return serviceMap.get(className);
+    public Object get(String interfaceName) {
+        return serviceMap.get(interfaceName);
     }
 
 }

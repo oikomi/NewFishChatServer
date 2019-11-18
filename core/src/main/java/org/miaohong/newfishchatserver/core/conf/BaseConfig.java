@@ -30,12 +30,10 @@ public abstract class BaseConfig implements Config, java.io.Serializable {
         return PropUtils.getLongValue(propName, defaultValue, properties);
     }
 
-
     @Override
     public boolean getBoolean(String propName, Boolean defaultValue) {
         return PropUtils.getBooleanValue(propName, defaultValue, properties);
     }
-
 
     protected abstract String getPropertiesPath();
 

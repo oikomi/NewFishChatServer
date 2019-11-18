@@ -4,7 +4,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class DateUtils {
+public final class DateUtils {
+
     /**
      * 每秒毫秒数
      */
@@ -21,7 +22,6 @@ public class DateUtils {
      * 每天毫秒数 24*60*60*1000;
      */
     public static final long MILLISECONDS_PER_DAY = 86400000;
-
     /**
      * 普通时间的格式
      */
@@ -30,6 +30,9 @@ public class DateUtils {
      * 毫秒级时间的格式
      */
     public static final String DATE_FORMAT_MILLS_TIME = "yyyy-MM-dd HH:mm:ss.SSS";
+
+    private DateUtils() {
+    }
 
     /**
      * 到下一分钟0秒的毫秒数

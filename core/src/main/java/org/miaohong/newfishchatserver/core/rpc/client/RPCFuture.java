@@ -15,7 +15,8 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class RPCFuture implements Future<Object> {
-    private static final Logger logger = LoggerFactory.getLogger(RPCFuture.class);
+
+    private static final Logger LOG = LoggerFactory.getLogger(RPCFuture.class);
 
     private Sync sync;
     private RpcRequest request;
@@ -23,7 +24,7 @@ public class RPCFuture implements Future<Object> {
     private long startTime;
     private long responseTimeThreshold = 5000;
 
-    private List<AsyncRPCCallback> pendingCallbacks = new ArrayList<AsyncRPCCallback>();
+    private List<AsyncRPCCallback> pendingCallbacks = new ArrayList<>();
     private ReentrantLock lock = new ReentrantLock();
 
     public RPCFuture(RpcRequest request) {
@@ -80,7 +81,7 @@ public class RPCFuture implements Future<Object> {
         // Threshold
         long responseTime = System.currentTimeMillis() - startTime;
         if (responseTime > this.responseTimeThreshold) {
-            logger.warn("Service response time is too slow. Request id = " + reponse.getRequestId() + ". Response Time = " + responseTime + "ms");
+            LOG.warn("Service response time is too slow. Request id = " + reponse.getRequestId() + ". Response Time = " + responseTime + "ms");
         }
     }
 
