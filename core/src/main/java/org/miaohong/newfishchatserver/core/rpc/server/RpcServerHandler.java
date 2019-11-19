@@ -1,5 +1,6 @@
 package org.miaohong.newfishchatserver.core.rpc.server;
 
+import com.google.common.eventbus.Subscribe;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -8,27 +9,28 @@ import org.miaohong.newfishchatserver.core.metric.MetricGroup;
 import org.miaohong.newfishchatserver.core.metric.SimpleCounter;
 import org.miaohong.newfishchatserver.core.rpc.RpcContext;
 import org.miaohong.newfishchatserver.core.rpc.RpcHandler;
+import org.miaohong.newfishchatserver.core.rpc.eventbus.ServiceRegistedEvent;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcResponse;
+import org.miaohong.newfishchatserver.core.rpc.registry.zk.ServiceListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
-public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> implements RpcHandler {
+public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest>
+        implements RpcHandler, ServiceListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(RpcServerHandler.class);
-
+    private static final Map<String, Object> serviceMap = new HashMap<>();
     private Counter recordRequestNum;
-
-    private IServiceHandler serviceHandler;
-
     private MetricGroup serverMetricGroup;
 
-    public RpcServerHandler(IServiceHandler serviceHandler, MetricGroup serverMetricGroup) {
+    public RpcServerHandler(MetricGroup serverMetricGroup) {
         LOG.info("enter RpcServerHandler");
-        this.serviceHandler = serviceHandler;
         this.serverMetricGroup = serverMetricGroup;
         if (this.recordRequestNum == null) {
             this.recordRequestNum = new SimpleCounter();
@@ -80,7 +82,9 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> im
     private Object handle(RpcRequest request) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         RpcContext.init(request);
         String className = request.getClassName();
-        Object serviceBean = serviceHandler.get(className);
+        LOG.info(className);
+        Object serviceBean = serviceMap.get(className);
+        LOG.info("serviceBean", serviceBean);
         Class<?> serviceClass = serviceBean.getClass();
         String methodName = request.getMethodName();
         Class<?>[] parameterTypes = request.getParameterTypes();
@@ -113,4 +117,23 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> im
         LOG.error("server caught exception", cause);
         ctx.close();
     }
+
+    @Override
+    public void addService() {
+
+    }
+
+    public static class RpcServerHandlerListener {
+        @Subscribe
+        public void doAction(final Object event) {
+            LOG.info("Received event [{}] and will take a action", event);
+
+            if (event instanceof ServiceRegistedEvent) {
+                ServiceRegistedEvent serviceRegistedEvent = (ServiceRegistedEvent) event;
+                serviceMap.put(serviceRegistedEvent.getInterfaceId(), serviceRegistedEvent.getRef());
+            }
+        }
+    }
+
+
 }

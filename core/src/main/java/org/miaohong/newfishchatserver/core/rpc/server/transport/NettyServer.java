@@ -14,7 +14,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.miaohong.newfishchatserver.annotations.Internal;
-import org.miaohong.newfishchatserver.core.conf.CommonNettyConfig;
+import org.miaohong.newfishchatserver.core.conf.CommonNettyPropConfig;
 import org.miaohong.newfishchatserver.core.execption.FatalExitExceptionHandler;
 import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
 import org.miaohong.newfishchatserver.core.metric.MetricGroup;
@@ -40,8 +40,11 @@ public class NettyServer {
                     .setUncaughtExceptionHandler(FatalExitExceptionHandler.INSTANCE);
 
     private final ServerNettyConfig serverNettyConfig;
-    private final CommonNettyConfig commonNettyConfig;
+
+    private final CommonNettyPropConfig commonNettyPropConfig;
+
     private String serverName;
+
     private ServerBootstrap bootstrap;
 
     private ChannelFuture bindFuture;
@@ -57,7 +60,7 @@ public class NettyServer {
                        MetricGroup serverMetricGroup) throws UnknownHostException {
         this.serverName = serverName;
         this.serverNettyConfig = new ServerNettyConfig(serverAddr, serverPort, 10);
-        this.commonNettyConfig = CommonNettyConfig.getINSTANCE();
+        this.commonNettyPropConfig = CommonNettyPropConfig.getINSTANCE();
         this.serviceHandler = serviceHandler;
         this.serverMetricGroup = serverMetricGroup;
     }
@@ -69,7 +72,7 @@ public class NettyServer {
     private void initCheck() {
         Preconditions.checkState(bootstrap == null, "Netty server has already been initialized.");
         Preconditions.checkNotNull(serverNettyConfig);
-        Preconditions.checkNotNull(commonNettyConfig);
+        Preconditions.checkNotNull(commonNettyPropConfig);
         Preconditions.checkNotNull(serverMetricGroup);
     }
 
@@ -101,7 +104,7 @@ public class NettyServer {
 
     private void initBootstrap() {
         bootstrap = new ServerBootstrap();
-        switch (commonNettyConfig.getTransportType()) {
+        switch (commonNettyPropConfig.getTransportType()) {
             case NIO:
                 initNioBootstrap();
                 break;
@@ -141,15 +144,15 @@ public class NettyServer {
                 new InetSocketAddress(serverNettyConfig.getServerAddress(), serverNettyConfig.getServerPort()))
                 .handler(new LoggingHandler(LogLevel.INFO))
                 .childHandler(new ServerchannelInitializer(serviceHandler, serverMetricGroup))
-                .option(ChannelOption.SO_BACKLOG, commonNettyConfig.getChannelOptionForSOBACKLOG())
-                .option(ChannelOption.SO_REUSEADDR, commonNettyConfig.getChannelOptionForSOREUSEADDR())
-                .childOption(ChannelOption.SO_KEEPALIVE, commonNettyConfig.getChannelOptionForSOKEEPALIVE())
-                .childOption(ChannelOption.TCP_NODELAY, commonNettyConfig.getgetChannelOptionForTCPNODELAY());
-        if (commonNettyConfig.getChannelOptionForSOSNDBUF() > 0) {
-            bootstrap.childOption(ChannelOption.SO_SNDBUF, commonNettyConfig.getChannelOptionForSOSNDBUF());
+                .option(ChannelOption.SO_BACKLOG, commonNettyPropConfig.getChannelOptionForSOBACKLOG())
+                .option(ChannelOption.SO_REUSEADDR, commonNettyPropConfig.getChannelOptionForSOREUSEADDR())
+                .childOption(ChannelOption.SO_KEEPALIVE, commonNettyPropConfig.getChannelOptionForSOKEEPALIVE())
+                .childOption(ChannelOption.TCP_NODELAY, commonNettyPropConfig.getgetChannelOptionForTCPNODELAY());
+        if (commonNettyPropConfig.getChannelOptionForSOSNDBUF() > 0) {
+            bootstrap.childOption(ChannelOption.SO_SNDBUF, commonNettyPropConfig.getChannelOptionForSOSNDBUF());
         }
-        if (commonNettyConfig.getChannelOptionForSORCVBUF() > 0) {
-            bootstrap.childOption(ChannelOption.SO_RCVBUF, commonNettyConfig.getChannelOptionForSORCVBUF());
+        if (commonNettyPropConfig.getChannelOptionForSORCVBUF() > 0) {
+            bootstrap.childOption(ChannelOption.SO_RCVBUF, commonNettyPropConfig.getChannelOptionForSORCVBUF());
         }
     }
 

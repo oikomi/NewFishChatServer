@@ -1,8 +1,9 @@
 package org.miaohong.newfishchatserver.gateway.config;
 
-import org.miaohong.newfishchatserver.core.conf.BaseConfig;
 
-public class GatewayServerConfig extends BaseConfig {
+import org.miaohong.newfishchatserver.core.conf.BasePropConfig;
+
+public class GatewayServerConfig extends BasePropConfig {
 
     private static final String SERVER_PROP_NAME = "server.properties";
 

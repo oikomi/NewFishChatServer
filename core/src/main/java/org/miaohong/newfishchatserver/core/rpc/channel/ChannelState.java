@@ -1,6 +1,7 @@
 package org.miaohong.newfishchatserver.core.rpc.channel;
 
 public enum ChannelState {
+
     UNINIT(0),
     INIT(1),
     ALIVE(2),

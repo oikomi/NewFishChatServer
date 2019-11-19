@@ -1,10 +1,12 @@
 package org.miaohong.newfishchatserver.gateway.server;
 
-import org.miaohong.newfishchatserver.core.conf.Config;
-import org.miaohong.newfishchatserver.core.rpc.server.RPCServer;
+import org.miaohong.newfishchatserver.core.conf.PropConfig;
+import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;
+import org.miaohong.newfishchatserver.core.rpc.service.ServiceConfig;
 import org.miaohong.newfishchatserver.core.util.DateUtils;
 import org.miaohong.newfishchatserver.gateway.config.GatewayServerConfig;
 import org.miaohong.newfishchatserver.proto.gateway.GatewayImpl;
+import org.miaohong.newfishchatserver.proto.gateway.GatewayProto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,13 +21,20 @@ public class GateWayServer {
     }
 
     public static void main(String[] args) {
-        Config config = new GatewayServerConfig();
-        RPCServer rpcServer = new RPCServer(buildServerName(config.getString("server.bind.addr"),
-                config.getInt("server.bind.port", 15000)), config.getString("server.bind.addr"),
-                config.getInt("server.bind.port", 15000));
-        rpcServer.addService("org.miaohong.newfishchatserver.proto.gateway.GatewayProto", new GatewayImpl());
-        for (Class c : GatewayImpl.class.getInterfaces()) {
-        }
-        rpcServer.start();
+        PropConfig propConfig = new GatewayServerConfig();
+
+        ServerConfig serverConfig = new ServerConfig()
+                .setServerName(buildServerName(propConfig.getString("server.bind.addr"),
+                        propConfig.getInt("server.bind.port", 15000)))
+                .setHost(propConfig.getString("server.bind.addr"))
+                .setPort(propConfig.getInt("server.bind.port", 15000))
+                .buildIfAbsent();
+
+        ServiceConfig<GatewayProto> serviceConfig = new ServiceConfig<>()
+                .setInterfaceId(GatewayProto.class.getName())
+                .setRef(new GatewayImpl())
+                .setServerConfig(serverConfig);
+
+        serviceConfig.export();
     }
 }

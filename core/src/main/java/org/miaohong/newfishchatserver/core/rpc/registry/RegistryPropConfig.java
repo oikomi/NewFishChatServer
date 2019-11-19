@@ -1,18 +1,18 @@
 package org.miaohong.newfishchatserver.core.rpc.registry;
 
-import org.miaohong.newfishchatserver.core.conf.BaseConfig;
 
-public class RegistryConfig extends BaseConfig {
+import org.miaohong.newfishchatserver.core.conf.BasePropConfig;
+
+public class RegistryPropConfig extends BasePropConfig {
 
     private static final String REGISTRY_PROP_NAME = "config/registry.properties";
 
-    private RegistryConfig() {
+    private RegistryPropConfig() {
     }
 
-    public static RegistryConfig getINSTANCE() {
-        return RegistryConfig.Inner.INSTANCE;
+    public static RegistryPropConfig getINSTANCE() {
+        return RegistryPropConfig.Inner.INSTANCE;
     }
-
 
     public String getProtocol() {
         return getString("registry.proto");
@@ -36,8 +36,7 @@ public class RegistryConfig extends BaseConfig {
     }
 
     private static class Inner {
-        private static final RegistryConfig INSTANCE = new RegistryConfig();
+        private static final RegistryPropConfig INSTANCE = new RegistryPropConfig();
     }
-
 
 }

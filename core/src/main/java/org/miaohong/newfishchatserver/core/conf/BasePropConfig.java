@@ -5,13 +5,13 @@ import org.miaohong.newfishchatserver.core.util.PropUtils;
 
 import java.util.Properties;
 
-public abstract class BaseConfig implements Config, java.io.Serializable {
+public abstract class BasePropConfig implements PropConfig, java.io.Serializable {
 
     private static final long serialVersionUID = 5429008745932219543L;
 
     private Properties properties;
 
-    public BaseConfig() {
+    public BasePropConfig() {
         this.properties = PropUtils.loadProperties(getPropertiesPath());
     }
 

@@ -1,14 +1,14 @@
 package org.miaohong.newfishchatserver.core.conf;
 
 
-public class CommonNettyConfig extends BaseConfig {
+public class CommonNettyPropConfig extends BasePropConfig {
 
     private static final String NETTY_PROP_NAME = "config/netty.properties";
 
-    private CommonNettyConfig() {
+    private CommonNettyPropConfig() {
     }
 
-    public static CommonNettyConfig getINSTANCE() {
+    public static CommonNettyPropConfig getINSTANCE() {
         return Inner.INSTANCE;
     }
 
@@ -59,6 +59,6 @@ public class CommonNettyConfig extends BaseConfig {
     }
 
     private static class Inner {
-        private static final CommonNettyConfig INSTANCE = new CommonNettyConfig();
+        private static final CommonNettyPropConfig INSTANCE = new CommonNettyPropConfig();
     }
 }

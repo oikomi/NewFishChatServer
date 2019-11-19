@@ -1,6 +1,7 @@
 package org.miaohong.newfishchatserver.core.rpc.client;
 
 
+import org.miaohong.newfishchatserver.core.rpc.registry.zk.ZookeeperRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,7 @@ public class RpcClient<T> implements Client {
     public RpcClient(String serverAddress, ConsumerConfig<T> consumerConfig) {
         this.serverAddress = serverAddress;
         this.consumerConfig = consumerConfig;
-        this.consumerBootstrap = new ConsumerBootstrap<>(this.consumerConfig);
+        this.consumerBootstrap = new ConsumerBootstrap<>(this.consumerConfig, new ZookeeperRegistry());
     }
 
     public static void submit(Runnable task) {

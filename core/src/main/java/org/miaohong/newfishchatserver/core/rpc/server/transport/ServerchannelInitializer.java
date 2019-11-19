@@ -28,10 +28,8 @@ public class ServerchannelInitializer extends ChannelInitializer<SocketChannel> 
 
     @Override
     protected void initChannel(SocketChannel socketChannel) {
-
         LOG.info("enter initChannel");
-
-        RpcServerHandler rpcServerHandler = new RpcServerHandler(serviceHandler, serverMetricGroup);
+        RpcServerHandler rpcServerHandler = new RpcServerHandler(serverMetricGroup);
         socketChannel.pipeline()
                 .addLast(new LengthFieldBasedFrameDecoder(FrameCoderProto.MAX_FRAME_LENGTH,
                         0, FrameCoderProto.LENGTH_FIELD_LENGTH, 0, 0))

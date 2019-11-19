@@ -4,111 +4,69 @@ import com.google.common.base.Strings;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
+import org.apache.curator.framework.recipes.cache.ChildData;
+import org.apache.curator.framework.recipes.cache.PathChildrenCache;
+import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
+import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.ZooDefs;
-import org.apache.zookeeper.data.ACL;
+import org.apache.zookeeper.CreateMode;
+import org.miaohong.newfishchatserver.core.rpc.client.ConsumerConfig;
+import org.miaohong.newfishchatserver.core.rpc.eventbus.ServiceRegistedEvent;
 import org.miaohong.newfishchatserver.core.rpc.registry.Register;
-import org.miaohong.newfishchatserver.core.rpc.registry.RegistryConfig;
+import org.miaohong.newfishchatserver.core.rpc.registry.RegistryPropConfig;
+import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;
+import org.miaohong.newfishchatserver.core.rpc.service.ServiceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class ZookeeperRegistry extends Register {
 
     private static final Logger LOG = LoggerFactory.getLogger(ZookeeperRegistry.class);
     private static final String CONTEXT_SEP = "/";
+    private final static byte[] PROVIDER_OFFLINE = new byte[]{0};
+    private final static byte[] PROVIDER_ONLINE = new byte[]{1};
+    private static final ConcurrentMap<ConsumerConfig, PathChildrenCache> INTERFACE_PROVIDER_CACHE = new ConcurrentHashMap<>();
     private CuratorFramework zkClient;
-    private String rootPath;
+    private String rootPath = "/fishchatserver/rpc/";
+    private boolean ephemeralNode = false;
+    private ServiceObserver serviceObserver;
+
 
     public ZookeeperRegistry() {
-        super(RegistryConfig.getINSTANCE());
+        super(RegistryPropConfig.getINSTANCE());
     }
-
-//    private List<AuthInfo> buildAuthInfo() {
-//        List<AuthInfo> info = new ArrayList<>();
-//
-//        String scheme = registryConfig.getParameter("scheme");
-//
-//        //如果存在多个认证信息，则在参数形式为为addAuth=user1:paasswd1,user2:passwd2
-//        String addAuth = registryConfig.getParameter("addAuth");
-//
-//        if (!Strings.isNullOrEmpty(addAuth)) {
-//            String[] addAuths = addAuth.split(",");
-//            for (String singleAuthInfo : addAuths) {
-//                info.add(new AuthInfo(scheme, singleAuthInfo.getBytes()));
-//            }
-//        }
-//
-//        return info;
-//    }
 
     public static void main(String[] args) {
         new ZookeeperRegistry().start();
-    }
-
-    private ACLProvider getDefaultAclProvider() {
-        return new ACLProvider() {
-            @Override
-            public List<ACL> getDefaultAcl() {
-                return ZooDefs.Ids.CREATOR_ALL_ACL;
-            }
-
-            @Override
-            public List<ACL> getAclForPath(String path) {
-                return ZooDefs.Ids.CREATOR_ALL_ACL;
-            }
-        };
     }
 
     private synchronized void init() {
         if (zkClient != null) {
             return;
         }
-        String addressInput = registryConfig.getAddress();
+        String addressInput = registryPropConfig.getAddress();
         if (Strings.isNullOrEmpty(addressInput)) {
             throw new RuntimeException("Address of zookeeper registry is empty.");
         }
-        int idx = addressInput.indexOf(CONTEXT_SEP);
-        String address;
-        if (idx > 0) {
-            address = addressInput.substring(0, idx);
-            rootPath = addressInput.substring(idx);
-            if (!rootPath.endsWith(CONTEXT_SEP)) {
-                rootPath += CONTEXT_SEP;
-            }
-        } else {
-            address = addressInput;
-            rootPath = CONTEXT_SEP;
-        }
-//        preferLocalFile = !CommonUtils.isFalse(registryConfig.getParameter(PARAM_PREFER_LOCAL_FILE));
-//        ephemeralNode = !CommonUtils.isFalse(registryConfig.getParameter(PARAM_CREATE_EPHEMERAL));
-//        if (LOG.isInfoEnabled()) {
-//            LOG.info(
-//                    "Init ZookeeperRegistry with address {}, root path is {}. preferLocalFile:{}, ephemeralNode:{}",
-//                    address, rootPath, preferLocalFile, ephemeralNode);
-//        }
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
         CuratorFrameworkFactory.Builder zkClientuilder = CuratorFrameworkFactory.builder()
-                .connectString(address)
-                .sessionTimeoutMs(registryConfig.getConnectTimeout())
-                .connectionTimeoutMs(registryConfig.getTimeout())
+                .connectString(registryPropConfig.getAddress())
+                .sessionTimeoutMs(registryPropConfig.getConnectTimeout())
+                .connectionTimeoutMs(registryPropConfig.getTimeout())
                 .canBeReadOnly(false)
                 .retryPolicy(retryPolicy)
                 .defaultData(null);
 
-        //是否需要添加zk的认证信息
-//        List<AuthInfo> authInfos = buildAuthInfo();
-//        if (CommonUtils.isNotEmpty(authInfos)) {
-//            zkClientuilder = zkClientuilder.aclProvider(getDefaultAclProvider())
-//                    .authorization(authInfos);
-//        }
-
         zkClient = zkClientuilder.build();
+
+        LOG.info(zkClient.getState().name());
 
         zkClient.getConnectionStateListenable().addListener(new ConnectionStateListener() {
             @Override
@@ -140,6 +98,101 @@ public class ZookeeperRegistry extends Register {
             throw new RuntimeException("Failed to start zookeeper zkClient", e);
         }
         return zkClient.getState() == CuratorFrameworkState.STARTED;
+    }
+
+    private String buildServicerPath(String rootPath, ServiceConfig config) {
+        return rootPath + config.getInterfaceId() + "/services";
+    }
+
+    private String buildServicerPath(String rootPath, ConsumerConfig config) {
+        return rootPath + config.getInterfaceId() + "/services";
+    }
+
+
+    @Override
+    public void register(ServiceConfig serviceConfig) {
+        LOG.info("do register");
+        ServerConfig serverConfig = serviceConfig.getServerConfig();
+        StringBuilder sb = new StringBuilder();
+        String serverUrl = sb.append(buildServicerPath(rootPath, serviceConfig)).
+                append(CONTEXT_SEP).append(serverConfig.getHost()).append(":")
+                .append(serverConfig.getPort()).toString();
+
+        LOG.info(sb.toString());
+
+        try {
+            getAndCheckZkClient().create().creatingParentContainersIfNeeded()
+                    .withMode(ephemeralNode ? CreateMode.EPHEMERAL : CreateMode.PERSISTENT)
+                    .forPath(serverUrl, PROVIDER_ONLINE);
+
+            serviceConfig.getEventBus().post(new ServiceRegistedEvent(
+                    serviceConfig.getInterfaceId(), serviceConfig.getRef()));
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<String> subscribe(ConsumerConfig config) {
+
+        if (serviceObserver == null) {
+            serviceObserver = new ZookeeperServiceObserver();
+        }
+
+        final String servicePath = buildServicerPath(rootPath, config);
+        PathChildrenCache pathChildrenCache = INTERFACE_PROVIDER_CACHE.get(config);
+        if (pathChildrenCache == null) {
+            pathChildrenCache = new PathChildrenCache(zkClient, servicePath, true);
+            final PathChildrenCache finalPathChildrenCache = pathChildrenCache;
+            pathChildrenCache.getListenable().addListener(new PathChildrenCacheListener() {
+                @Override
+                public void childEvent(CuratorFramework client1, PathChildrenCacheEvent event) throws Exception {
+                    switch (event.getType()) {
+                        case CHILD_ADDED:
+                            LOG.info("addService");
+                            serviceObserver.addService(config, servicePath, event.getData(),
+                                    finalPathChildrenCache.getCurrentData());
+                            break;
+                        case CHILD_REMOVED:
+                            serviceObserver.removeService(config, servicePath, event.getData(),
+                                    finalPathChildrenCache.getCurrentData());
+                            break;
+                        case CHILD_UPDATED:
+                            serviceObserver.updateService(config, servicePath, event.getData(),
+                                    finalPathChildrenCache.getCurrentData());
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+            try {
+                pathChildrenCache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            INTERFACE_PROVIDER_CACHE.put(config, pathChildrenCache);
+        }
+
+        LOG.info(String.valueOf(pathChildrenCache.getCurrentData()));
+
+        List<ChildData> childDatas = pathChildrenCache.getCurrentData();
+
+        for (ChildData data : childDatas) {
+            String url = data.getPath().substring(servicePath.length() + 1);
+            LOG.info(url);
+
+        }
+
+        return null;
+
+    }
+
+    private CuratorFramework getAndCheckZkClient() {
+        if (zkClient == null || zkClient.getState() != CuratorFrameworkState.STARTED) {
+            throw new RuntimeException("Zookeeper client is not available");
+        }
+        return zkClient;
     }
 
 }

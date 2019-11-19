@@ -1,6 +1,6 @@
 package org.miaohong.newfishchatserver.core.conf;
 
-public class RpcClientConfig extends BaseConfig {
+public class RpcClientConfig extends BasePropConfig {
 
     private static final String RPC_CLIENT_PROP_NAME = "config/rpcclient.properties";
 

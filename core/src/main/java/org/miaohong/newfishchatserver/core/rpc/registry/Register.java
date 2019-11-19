@@ -1,12 +1,23 @@
 package org.miaohong.newfishchatserver.core.rpc.registry;
 
-public abstract class Register {
-    protected RegistryConfig registryConfig;
+import org.miaohong.newfishchatserver.core.rpc.client.ConsumerConfig;
+import org.miaohong.newfishchatserver.core.rpc.service.ServiceConfig;
 
-    public Register(RegistryConfig registryConfig) {
-        this.registryConfig = registryConfig;
+import java.util.List;
+
+public abstract class Register {
+
+    protected RegistryPropConfig registryPropConfig;
+
+    public Register(RegistryPropConfig registryPropConfig) {
+        this.registryPropConfig = registryPropConfig;
     }
 
-    protected abstract boolean start();
+    public abstract boolean start();
+
+    public abstract void register(ServiceConfig config);
+
+    public abstract List<String> subscribe(final ConsumerConfig config);
+
 
 }

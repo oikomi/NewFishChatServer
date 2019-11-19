@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-public class RpcServiceHandler implements IServiceHandler {
+public class ServiceHandler implements IServiceHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RpcServiceHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ServiceHandler.class);
 
     private final Map<String, Object> serviceMap = new HashMap<>();
 

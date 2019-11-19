@@ -46,6 +46,8 @@ public class BytebuddyInvocationHandler extends AbstractInvocationHandler {
         LOG.debug(method.getName());
 
         RpcClientHandler handler = ConnectionManager.getINSTANCE().chooseHandler();
+        LOG.info("choose handler");
+
         RPCFuture rpcFuture = handler.sendRequest(request);
         return rpcFuture.get();
     }

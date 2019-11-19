@@ -1,7 +1,7 @@
 package org.miaohong.newfishchatserver.core.conf;
 
 
-public interface Config {
+public interface PropConfig {
     String getString(String propName);
 
     int getInt(String propName, int defaultValue);

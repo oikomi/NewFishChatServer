@@ -8,6 +8,10 @@ public final class CommonUtils {
     private CommonUtils() {
     }
 
+    public static boolean isEmpty(Collection collection) {
+        return !isNotEmpty(collection);
+    }
+
     public static boolean isNotEmpty(Collection collection) {
         return collection != null && !collection.isEmpty();
     }
