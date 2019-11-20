@@ -14,7 +14,7 @@ public final class PropUtils {
     private static final Logger LOG = LoggerFactory.getLogger(PropUtils.class);
 
     private PropUtils() {
-
+        throw new AssertionError();
     }
 
     public static Properties loadProperties(String path) {

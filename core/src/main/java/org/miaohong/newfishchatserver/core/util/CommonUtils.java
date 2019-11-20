@@ -6,6 +6,7 @@ import java.util.Map;
 public final class CommonUtils {
 
     private CommonUtils() {
+        throw new AssertionError();
     }
 
     public static boolean isEmpty(Collection collection) {

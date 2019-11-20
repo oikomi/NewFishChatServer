@@ -2,6 +2,10 @@ package org.miaohong.newfishchatserver.core.util;
 
 public class ClassLoaderUtils {
 
+    private ClassLoaderUtils() {
+        throw new AssertionError();
+    }
+
     /**
      * 得到当前ClassLoader，先找线程池的，找不到就找中间件所在的ClassLoader
      *

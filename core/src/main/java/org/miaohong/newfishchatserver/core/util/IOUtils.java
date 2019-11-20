@@ -6,6 +6,10 @@ import java.net.Socket;
 
 public class IOUtils {
 
+    private IOUtils() {
+        throw new AssertionError();
+    }
+
     public static void closeQuietly(Closeable closeable) {
         if (closeable != null) {
             try {

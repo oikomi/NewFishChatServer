@@ -45,6 +45,10 @@ public class NetUtils {
      */
     private static final Pattern LOCAL_IP_PATTERN = Pattern.compile("127(\\.\\d{1,3}){3}$");
 
+    private NetUtils() {
+        throw new AssertionError();
+    }
+
     /**
      * 判断端口是否有效 0-65535
      *

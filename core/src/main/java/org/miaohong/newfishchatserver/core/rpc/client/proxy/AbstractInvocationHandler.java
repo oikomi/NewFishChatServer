@@ -14,7 +14,7 @@ public abstract class AbstractInvocationHandler {
     protected RpcRequest buildRequest(Method method, Object[] args) {
         RpcRequest request = new RpcRequest();
         request.setRequestId(UUID.randomUUID().toString());
-        request.setClassName(method.getDeclaringClass().getName());
+        request.setInterfaceId(method.getDeclaringClass().getName());
         request.setMethodName(method.getName());
         request.setParameterTypes(method.getParameterTypes());
         request.setParameters(args);

@@ -76,7 +76,7 @@ public class JDKInvocationHandler<T> extends AbstractInvocationHandler implement
     private RpcRequest createRequest(String className, String methodName, Object[] args) {
         RpcRequest request = new RpcRequest();
         request.setRequestId(UUID.randomUUID().toString());
-        request.setClassName(className);
+        request.setInterfaceId(className);
         request.setMethodName(methodName);
         request.setParameters(args);
 

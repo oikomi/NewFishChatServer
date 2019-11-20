@@ -13,12 +13,11 @@ import org.miaohong.newfishchatserver.core.rpc.RpcHandler;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.ServiceRegistedEvent;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcResponse;
+import org.miaohong.newfishchatserver.core.rpc.server.proxy.CglibProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -37,7 +36,6 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> im
         }
         //FIXME
         this.serverMetricGroup.counter("record-request-num", this.recordRequestNum);
-
     }
 
 
@@ -81,13 +79,12 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> im
 
     private Object handle(RpcRequest request) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         RpcContext.init(request);
-        String className = request.getClassName();
-        LOG.info(className);
-        Object serviceBean = SERVICE_MAP.get(className);
+        String interfaceId = request.getInterfaceId();
+        Object serviceBean = SERVICE_MAP.get(interfaceId);
         if (serviceBean == null) {
             throw new ServerCoreException("serviceBean is null");
         }
-        LOG.info("serviceBean", serviceBean);
+        LOG.info("serviceBean: {}", serviceBean);
         Class<?> serviceClass = serviceBean.getClass();
         String methodName = request.getMethodName();
         Class<?>[] parameterTypes = request.getParameterTypes();
@@ -95,24 +92,8 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> im
 
         LOG.info(serviceClass.getName());
         LOG.info(methodName);
-        for (int i = 0; i < parameterTypes.length; ++i) {
-            LOG.debug(parameterTypes[i].getName());
-        }
-        if (parameters != null) {
-            for (int i = 0; i < parameters.length; ++i) {
-                LOG.debug(parameters[i].toString());
-            }
-        }
 
-        // JDK reflect
-        Method method = serviceClass.getMethod(methodName, parameterTypes);
-        method.setAccessible(true);
-        return method.invoke(serviceBean, parameters);
-
-        // Cglib reflect
-//        FastClass serviceFastClass = FastClass.create(serviceClass);
-//        int methodIndex = serviceFastClass.getIndex(methodName, parameterTypes);
-//        return serviceFastClass.invoke(methodIndex, serviceBean, parameters);
+        return CglibProxy.invoke(serviceClass, methodName, parameterTypes, serviceBean, parameters);
     }
 
     @Override

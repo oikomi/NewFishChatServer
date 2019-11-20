@@ -32,6 +32,7 @@ public final class DateUtils {
     public static final String DATE_FORMAT_MILLS_TIME = "yyyy-MM-dd HH:mm:ss.SSS";
 
     private DateUtils() {
+        throw new AssertionError();
     }
 
     /**

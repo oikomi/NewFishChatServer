@@ -12,6 +12,10 @@ import static org.miaohong.newfishchatserver.core.util.ClassLoaderUtils.getCurre
 
 public final class ClassUtils {
 
+    private ClassUtils() {
+        throw new AssertionError();
+    }
+
     /**
      * 根据类名加载Class
      *
