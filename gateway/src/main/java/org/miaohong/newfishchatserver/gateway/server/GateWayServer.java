@@ -3,6 +3,8 @@ package org.miaohong.newfishchatserver.gateway.server;
 import org.miaohong.newfishchatserver.core.conf.PropConfig;
 import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.service.ServiceConfig;
+import org.miaohong.newfishchatserver.core.runtime.JvmShutdownSafeguard;
+import org.miaohong.newfishchatserver.core.runtime.SignalHandler;
 import org.miaohong.newfishchatserver.core.util.DateUtils;
 import org.miaohong.newfishchatserver.gateway.config.GatewayServerConfig;
 import org.miaohong.newfishchatserver.proto.gateway.GatewayImpl;
@@ -21,6 +23,10 @@ public class GateWayServer {
     }
 
     public static void main(String[] args) {
+
+        SignalHandler.register(LOG);
+        JvmShutdownSafeguard.installAsShutdownHook(LOG);
+
         PropConfig propConfig = new GatewayServerConfig();
 
         ServerConfig serverConfig = new ServerConfig()

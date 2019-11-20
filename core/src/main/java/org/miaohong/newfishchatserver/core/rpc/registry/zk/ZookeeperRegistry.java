@@ -1,6 +1,7 @@
 package org.miaohong.newfishchatserver.core.rpc.registry.zk;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -23,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -32,12 +34,11 @@ public class ZookeeperRegistry extends Register {
     private static final String CONTEXT_SEP = "/";
     private final static byte[] PROVIDER_OFFLINE = new byte[]{0};
     private final static byte[] PROVIDER_ONLINE = new byte[]{1};
-    private static final ConcurrentMap<ConsumerConfig, PathChildrenCache> INTERFACE_PROVIDER_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<ConsumerConfig, PathChildrenCache> INTERFACE_SERVICE_CACHE = new ConcurrentHashMap<>();
     private CuratorFramework zkClient;
     private String rootPath = "/fishchatserver/rpc/";
-    private boolean ephemeralNode = false;
+    private boolean ephemeralNode = true;
     private ServiceObserver serviceObserver;
-
 
     public ZookeeperRegistry() {
         super(RegistryPropConfig.getINSTANCE());
@@ -108,7 +109,6 @@ public class ZookeeperRegistry extends Register {
         return rootPath + config.getInterfaceId() + "/services";
     }
 
-
     @Override
     public void register(ServiceConfig serviceConfig) {
         LOG.info("do register");
@@ -124,7 +124,6 @@ public class ZookeeperRegistry extends Register {
             getAndCheckZkClient().create().creatingParentContainersIfNeeded()
                     .withMode(ephemeralNode ? CreateMode.EPHEMERAL : CreateMode.PERSISTENT)
                     .forPath(serverUrl, PROVIDER_ONLINE);
-
             serviceConfig.getEventBus().post(new ServiceRegistedEvent(
                     serviceConfig.getInterfaceId(), serviceConfig.getRef()));
         } catch (Exception e) {
@@ -134,13 +133,12 @@ public class ZookeeperRegistry extends Register {
 
     @Override
     public List<String> subscribe(ConsumerConfig config) {
-
+        List<String> servers = Lists.newArrayList();
         if (serviceObserver == null) {
             serviceObserver = new ZookeeperServiceObserver();
         }
-
         final String servicePath = buildServicerPath(rootPath, config);
-        PathChildrenCache pathChildrenCache = INTERFACE_PROVIDER_CACHE.get(config);
+        PathChildrenCache pathChildrenCache = INTERFACE_SERVICE_CACHE.get(config);
         if (pathChildrenCache == null) {
             pathChildrenCache = new PathChildrenCache(zkClient, servicePath, true);
             final PathChildrenCache finalPathChildrenCache = pathChildrenCache;
@@ -169,9 +167,9 @@ public class ZookeeperRegistry extends Register {
             try {
                 pathChildrenCache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.error(e.getMessage(), e);
             }
-            INTERFACE_PROVIDER_CACHE.put(config, pathChildrenCache);
+            INTERFACE_SERVICE_CACHE.put(config, pathChildrenCache);
         }
 
         LOG.info(String.valueOf(pathChildrenCache.getCurrentData()));
@@ -179,12 +177,11 @@ public class ZookeeperRegistry extends Register {
         List<ChildData> childDatas = pathChildrenCache.getCurrentData();
 
         for (ChildData data : childDatas) {
-            String url = data.getPath().substring(servicePath.length() + 1);
-            LOG.info(url);
-
+            String server = data.getPath().substring(servicePath.length() + 1);
+            servers.add(server);
         }
 
-        return null;
+        return servers;
 
     }
 
@@ -195,4 +192,28 @@ public class ZookeeperRegistry extends Register {
         return zkClient;
     }
 
+    private void closePathChildrenCache(Map<ConsumerConfig, PathChildrenCache> map) {
+        for (Map.Entry<ConsumerConfig, PathChildrenCache> entry : map.entrySet()) {
+            try {
+                entry.getValue().close();
+            } catch (Exception e) {
+                LOG.error("Close PathChildrenCache error!", e);
+            }
+        }
+    }
+
+    @Override
+    public void destroy() {
+        closePathChildrenCache(INTERFACE_SERVICE_CACHE);
+        if (zkClient != null && zkClient.getState() == CuratorFrameworkState.STARTED) {
+            zkClient.close();
+        }
+    }
+
+    @Override
+    public void destroy(DestroyHook hook) {
+        hook.preDestroy();
+        destroy();
+        hook.postDestroy();
+    }
 }

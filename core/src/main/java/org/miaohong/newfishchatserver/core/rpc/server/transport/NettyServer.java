@@ -18,7 +18,6 @@ import org.miaohong.newfishchatserver.core.conf.CommonNettyPropConfig;
 import org.miaohong.newfishchatserver.core.execption.FatalExitExceptionHandler;
 import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
 import org.miaohong.newfishchatserver.core.metric.MetricGroup;
-import org.miaohong.newfishchatserver.core.rpc.server.IServiceHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,19 +48,15 @@ public class NettyServer {
 
     private ChannelFuture bindFuture;
 
-    private IServiceHandler serviceHandler;
-
     private MetricGroup serverMetricGroup;
 
     public NettyServer(String serverName,
                        String serverAddr,
                        int serverPort,
-                       IServiceHandler serviceHandler,
                        MetricGroup serverMetricGroup) throws UnknownHostException {
         this.serverName = serverName;
         this.serverNettyConfig = new ServerNettyConfig(serverAddr, serverPort, 10);
         this.commonNettyPropConfig = CommonNettyPropConfig.getINSTANCE();
-        this.serviceHandler = serviceHandler;
         this.serverMetricGroup = serverMetricGroup;
     }
 
@@ -143,7 +138,7 @@ public class NettyServer {
         bootstrap.localAddress(
                 new InetSocketAddress(serverNettyConfig.getServerAddress(), serverNettyConfig.getServerPort()))
                 .handler(new LoggingHandler(LogLevel.INFO))
-                .childHandler(new ServerchannelInitializer(serviceHandler, serverMetricGroup))
+                .childHandler(new ServerchannelInitializer(serverMetricGroup))
                 .option(ChannelOption.SO_BACKLOG, commonNettyPropConfig.getChannelOptionForSOBACKLOG())
                 .option(ChannelOption.SO_REUSEADDR, commonNettyPropConfig.getChannelOptionForSOREUSEADDR())
                 .childOption(ChannelOption.SO_KEEPALIVE, commonNettyPropConfig.getChannelOptionForSOKEEPALIVE())

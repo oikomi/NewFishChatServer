@@ -12,7 +12,6 @@ import org.miaohong.newfishchatserver.core.rpc.RpcHandler;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.ServiceRegistedEvent;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcResponse;
-import org.miaohong.newfishchatserver.core.rpc.registry.zk.ServiceListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest>
-        implements RpcHandler, ServiceListener {
+        implements RpcHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(RpcServerHandler.class);
     private static final Map<String, Object> serviceMap = new HashMap<>();
@@ -118,11 +117,6 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest>
         ctx.close();
     }
 
-    @Override
-    public void addService() {
-
-    }
-
     public static class RpcServerHandlerListener {
         @Subscribe
         public void doAction(final Object event) {
@@ -134,6 +128,4 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest>
             }
         }
     }
-
-
 }

@@ -1,7 +1,8 @@
 package org.miaohong.newfishchatserver.core.rpc.service;
 
-import com.google.common.eventbus.EventBus;
 import lombok.Getter;
+import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBus;
+import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBusManager;
 import org.miaohong.newfishchatserver.core.rpc.registry.zk.ZookeeperRegistry;
 import org.miaohong.newfishchatserver.core.rpc.server.RpcServerHandler;
 import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;
@@ -10,7 +11,7 @@ import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;
 public class ServiceConfig<T> {
 
     @Getter
-    final EventBus eventBus = new EventBus();
+    private final EventBus eventBus = EventBusManager.get();
     private ServerConfig serverConfig;
     private T ref;
     private String interfaceId;

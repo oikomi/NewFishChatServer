@@ -5,7 +5,7 @@ import org.miaohong.newfishchatserver.core.rpc.service.ServiceConfig;
 
 import java.util.List;
 
-public abstract class Register {
+public abstract class Register implements Destroyable {
 
     protected RegistryPropConfig registryPropConfig;
 
@@ -19,5 +19,16 @@ public abstract class Register {
 
     public abstract List<String> subscribe(final ConsumerConfig config);
 
+
+    @Override
+    public void destroy(DestroyHook hook) {
+        if (hook != null) {
+            hook.preDestroy();
+        }
+        destroy();
+        if (hook != null) {
+            hook.postDestroy();
+        }
+    }
 
 }

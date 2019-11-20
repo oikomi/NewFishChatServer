@@ -5,13 +5,13 @@ import org.miaohong.newfishchatserver.core.execption.FatalExitExceptionHandler;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class NamedThreadFactory implements ThreadFactory {
 
     private static final String DEFAULT_POOL_NAME = "default-pool";
 
-    private final AtomicInteger threadNumber = new AtomicInteger(1);
+    private final AtomicLong threadNumber = new AtomicLong(1);
 
     private final ThreadGroup group;
 

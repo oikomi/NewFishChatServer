@@ -18,8 +18,6 @@ public class RPCServer extends Server {
 
     private NettyServer nettyServer;
 
-    private IServiceHandler serviceHandler;
-
     private ServerConfig serverConfig;
 
     @Getter
@@ -27,11 +25,10 @@ public class RPCServer extends Server {
 
     public RPCServer(ServerConfig serverConfig) {
         this.serverConfig = serverConfig;
-        serviceHandler = new ServiceHandler();
         try {
             nettyServer = new NettyServer(this.serverConfig.getServerName(),
                     this.serverConfig.getHost(), this.serverConfig.getPort(),
-                    serviceHandler, new ServerMetricGroup(new MetricRegistryImpl()));
+                    new ServerMetricGroup(new MetricRegistryImpl()));
             serverState = ServerState.ALIVE;
         } catch (Exception e) {
             LOG.error("RPCServer init failed {}", e.getMessage(), e);
