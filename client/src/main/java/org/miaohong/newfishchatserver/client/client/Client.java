@@ -27,5 +27,10 @@ public class Client {
         Person person = s.person();
         System.out.println(person);
         LOG.info("result is {}", person);
+
+        person = s.person();
+        System.out.println(person);
+        LOG.info("result is {}", person);
+
     }
 }

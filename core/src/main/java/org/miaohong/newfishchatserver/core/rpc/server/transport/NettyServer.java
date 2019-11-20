@@ -73,9 +73,7 @@ public class NettyServer {
 
     private void init() {
         initCheck();
-
         final long start = System.currentTimeMillis();
-
         initBootstrap();
         setBootstrap();
 

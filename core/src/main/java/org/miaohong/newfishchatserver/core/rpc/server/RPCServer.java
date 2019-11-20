@@ -34,7 +34,6 @@ public class RPCServer extends Server {
             LOG.error("RPCServer init failed {}", e.getMessage(), e);
             throw new ServerCoreException(e, CoreErrorConstant.SERVER_DEFAULT_ERROR);
         } finally {
-            shutDown();
             serverState = ServerState.CLOSE;
         }
     }
@@ -56,4 +55,20 @@ public class RPCServer extends Server {
         nettyServer.shutdown();
     }
 
+    @Override
+    public void destroy() {
+        LOG.info("[LifeCycle] {} destroy", RPCServer.class.getName());
+        shutDown();
+    }
+
+    @Override
+    public void destroy(DestroyHook hook) {
+        if (hook != null) {
+            hook.preDestroy();
+        }
+        destroy();
+        if (hook != null) {
+            hook.postDestroy();
+        }
+    }
 }

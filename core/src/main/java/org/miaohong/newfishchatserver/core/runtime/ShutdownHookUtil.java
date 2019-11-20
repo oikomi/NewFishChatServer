@@ -5,6 +5,10 @@ import org.slf4j.Logger;
 
 public class ShutdownHookUtil {
 
+    private ShutdownHookUtil() {
+        throw new AssertionError();
+    }
+
     /**
      * Adds a shutdown hook to the JVM and returns the Thread, which has been registered.
      */
@@ -31,8 +35,8 @@ public class ShutdownHookUtil {
      * Adds a shutdown hook to the JVM.
      *
      * @param shutdownHook Shutdown hook to be registered.
-     * @param serviceName The name of service.
-     * @param logger The logger to log.
+     * @param serviceName  The name of service.
+     * @param logger       The logger to log.
      * @return Whether the hook has been successfully registered.
      */
     public static boolean addShutdownHookThread(
@@ -75,10 +79,6 @@ public class ShutdownHookUtil {
         } catch (Throwable t) {
             logger.warn("Exception while un-registering {}'s shutdown hook.", serviceName, t);
         }
-    }
-
-    private ShutdownHookUtil() {
-        throw new AssertionError();
     }
 
 }

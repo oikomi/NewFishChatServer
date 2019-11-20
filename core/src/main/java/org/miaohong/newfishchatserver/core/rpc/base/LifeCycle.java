@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.rpc;
+package org.miaohong.newfishchatserver.core.rpc.base;
 
 public interface LifeCycle {
 

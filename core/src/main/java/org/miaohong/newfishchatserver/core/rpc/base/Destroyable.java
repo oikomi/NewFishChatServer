@@ -1,18 +1,18 @@
-package org.miaohong.newfishchatserver.core.rpc.registry;
+package org.miaohong.newfishchatserver.core.rpc.base;
 
 public interface Destroyable {
 
     /**
      * 销毁接口
      */
-    public void destroy();
+    void destroy();
 
     /**
      * Do destroy with hook.
      *
      * @param hook DestroyHook
      */
-    public void destroy(DestroyHook hook);
+    void destroy(DestroyHook hook);
 
     /**
      * 销毁钩子
@@ -21,12 +21,12 @@ public interface Destroyable {
         /**
          * 销毁前要做的事情
          */
-        public void preDestroy();
+        void preDestroy();
 
         /**
          * 銷毀后要做的事情
          */
-        public void postDestroy();
+        void postDestroy();
     }
 
 }

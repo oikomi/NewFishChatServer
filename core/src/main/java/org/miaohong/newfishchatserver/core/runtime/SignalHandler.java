@@ -8,33 +8,6 @@ public class SignalHandler {
     private static boolean registered = false;
 
     /**
-     * Our signal handler.
-     */
-    private static class Handler implements sun.misc.SignalHandler {
-
-        private final Logger LOG;
-        private final sun.misc.SignalHandler prevHandler;
-
-        Handler(String name, Logger LOG) {
-            this.LOG = LOG;
-            prevHandler = Signal.handle(new Signal(name), this);
-        }
-
-        /**
-         * Handle an incoming signal.
-         *
-         * @param signal    The incoming signal
-         */
-        @Override
-        public void handle(Signal signal) {
-            LOG.info("RECEIVED SIGNAL {}: SIG{}. Shutting down as requested.",
-                    signal.getNumber(),
-                    signal.getName());
-            prevHandler.handle(signal);
-        }
-    }
-
-    /**
      * Register some signal handlers.
      *
      * @param LOG The slf4j logger
@@ -47,8 +20,8 @@ public class SignalHandler {
             registered = true;
 
             final String[] SIGNALS = OperatingSystem.isWindows()
-                    ? new String[]{ "TERM", "INT"}
-                    : new String[]{ "TERM", "HUP", "INT" };
+                    ? new String[]{"TERM", "INT"}
+                    : new String[]{"TERM", "HUP", "INT"};
 
             StringBuilder bld = new StringBuilder();
             bld.append("Registered UNIX signal handlers for [");
@@ -66,6 +39,33 @@ public class SignalHandler {
             }
             bld.append("]");
             LOG.info(bld.toString());
+        }
+    }
+
+    /**
+     * Our signal handler.
+     */
+    private static class Handler implements sun.misc.SignalHandler {
+
+        private final Logger LOG;
+        private final sun.misc.SignalHandler prevHandler;
+
+        Handler(String name, Logger LOG) {
+            this.LOG = LOG;
+            prevHandler = Signal.handle(new Signal(name), this);
+        }
+
+        /**
+         * Handle an incoming signal.
+         *
+         * @param signal The incoming signal
+         */
+        @Override
+        public void handle(Signal signal) {
+            LOG.info("RECEIVED SIGNAL {}: SIG{}. Shutting down as requested.",
+                    signal.getNumber(),
+                    signal.getName());
+            prevHandler.handle(signal);
         }
     }
 
