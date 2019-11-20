@@ -16,17 +16,14 @@ public class ServerNettyConfig {
     private static final Logger LOG = LoggerFactory.getLogger(ServerNettyConfig.class);
     private static final int MAX_PORT = 65535;
     private final InetAddress serverAddress;
-    private final int serverNumThreads;
+    private final int serverNumThreads = Math.max(Runtime.getRuntime().availableProcessors() + 1, 32);
     private final int serverPort;
 
     public ServerNettyConfig(
             String serverAddr,
-            int serverPort,
-            int serverNumThreads) throws UnknownHostException {
+            int serverPort) throws UnknownHostException {
         serverAddress = InetAddress.getByName(serverAddr);
         Preconditions.checkArgument(serverPort >= 0 && serverPort <= MAX_PORT, "Invalid port number.");
         this.serverPort = serverPort;
-        this.serverNumThreads = serverNumThreads;
     }
-
 }

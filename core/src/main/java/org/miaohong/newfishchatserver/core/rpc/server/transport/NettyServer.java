@@ -55,7 +55,7 @@ public class NettyServer {
                        int serverPort,
                        MetricGroup serverMetricGroup) throws UnknownHostException {
         this.serverName = serverName;
-        this.serverNettyConfig = new ServerNettyConfig(serverAddr, serverPort, 10);
+        this.serverNettyConfig = new ServerNettyConfig(serverAddr, serverPort);
         this.commonNettyPropConfig = CommonNettyPropConfig.getINSTANCE();
         this.serverMetricGroup = serverMetricGroup;
     }
@@ -72,10 +72,11 @@ public class NettyServer {
     }
 
     private void init() {
-        initCheck();
         final long start = System.currentTimeMillis();
+
+        initCheck();
         initBootstrap();
-        setBootstrap();
+        setBootstrapOption();
 
         bindFuture = bootstrap.bind().syncUninterruptibly();
 
@@ -121,32 +122,34 @@ public class NettyServer {
 
     private void initNioBootstrap() {
         String name = ServerNettyConfig.SERVER_THREAD_GROUP_NAME + " (" + serverNettyConfig.getServerPort() + ")";
-        NioEventLoopGroup nioGroup = new NioEventLoopGroup(serverNettyConfig.getServerNumThreads(), getNamedThreadFactory(name));
-        bootstrap.group(nioGroup).channel(NioServerSocketChannel.class);
+        NioEventLoopGroup bossGroup = new NioEventLoopGroup(1, getNamedThreadFactory(name));
+        NioEventLoopGroup workerGroup = new NioEventLoopGroup(serverNettyConfig.getServerNumThreads(), getNamedThreadFactory(name));
+        bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class);
     }
 
     private void initEpollBootstrap() {
         String name = ServerNettyConfig.SERVER_THREAD_GROUP_NAME + " (" + serverNettyConfig.getServerPort() + ")";
-        EpollEventLoopGroup epollGroup = new EpollEventLoopGroup(serverNettyConfig.getServerNumThreads(),
+        NioEventLoopGroup bossGroup = new NioEventLoopGroup(1, getNamedThreadFactory(name));
+        EpollEventLoopGroup workerGroup = new EpollEventLoopGroup(serverNettyConfig.getServerNumThreads(),
                 getNamedThreadFactory(name));
-        bootstrap.group(epollGroup).channel(EpollServerSocketChannel.class);
+        bootstrap.group(bossGroup, workerGroup).channel(EpollServerSocketChannel.class);
     }
 
-    private void setBootstrap() {
+    private void setBootstrapOption() {
         bootstrap.localAddress(
                 new InetSocketAddress(serverNettyConfig.getServerAddress(), serverNettyConfig.getServerPort()))
-                .handler(new LoggingHandler(LogLevel.INFO))
-                .childHandler(new ServerchannelInitializer(serverMetricGroup))
-                .option(ChannelOption.SO_BACKLOG, commonNettyPropConfig.getChannelOptionForSOBACKLOG())
-                .option(ChannelOption.SO_REUSEADDR, commonNettyPropConfig.getChannelOptionForSOREUSEADDR())
-                .childOption(ChannelOption.SO_KEEPALIVE, commonNettyPropConfig.getChannelOptionForSOKEEPALIVE())
-                .childOption(ChannelOption.TCP_NODELAY, commonNettyPropConfig.getgetChannelOptionForTCPNODELAY());
+                .handler(new LoggingHandler(LogLevel.INFO));
         if (commonNettyPropConfig.getChannelOptionForSOSNDBUF() > 0) {
             bootstrap.childOption(ChannelOption.SO_SNDBUF, commonNettyPropConfig.getChannelOptionForSOSNDBUF());
         }
         if (commonNettyPropConfig.getChannelOptionForSORCVBUF() > 0) {
             bootstrap.childOption(ChannelOption.SO_RCVBUF, commonNettyPropConfig.getChannelOptionForSORCVBUF());
         }
+        bootstrap.option(ChannelOption.SO_BACKLOG, commonNettyPropConfig.getChannelOptionForSOBACKLOG())
+                .option(ChannelOption.SO_REUSEADDR, commonNettyPropConfig.getChannelOptionForSOREUSEADDR())
+                .childOption(ChannelOption.SO_KEEPALIVE, commonNettyPropConfig.getChannelOptionForSOKEEPALIVE())
+                .childOption(ChannelOption.TCP_NODELAY, commonNettyPropConfig.getgetChannelOptionForTCPNODELAY())
+                .childHandler(new ServerchannelInitializer(serverMetricGroup));
     }
 
     public void start() {
