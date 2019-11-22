@@ -1,12 +1,13 @@
-package org.miaohong.newfishchatserver.core.rpc.client;
+package org.miaohong.newfishchatserver.core.rpc.client.transport;
 
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.Getter;
 import org.miaohong.newfishchatserver.core.rpc.RpcHandler;
-import org.miaohong.newfishchatserver.core.rpc.channel.ClientChannel;
+import org.miaohong.newfishchatserver.core.rpc.channel.Channel;
+import org.miaohong.newfishchatserver.core.rpc.channel.NettyChannel;
+import org.miaohong.newfishchatserver.core.rpc.client.RPCFuture;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcResponse;
 import org.slf4j.Logger;
@@ -14,17 +15,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> implements RpcHandler {
+public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse> implements RpcHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RpcClientHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NettyClientHandler.class);
 
     private ConcurrentHashMap<String, RPCFuture> pendingRpc = new ConcurrentHashMap<>();
 
     @Getter
-    private ClientChannel clientChannel;
+    private Channel channel;
 
-    public RpcClientHandler() {
-        this.clientChannel = new ClientChannel();
+    public NettyClientHandler() {
     }
 
     @Override
@@ -35,7 +35,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> i
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         super.channelRegistered(ctx);
-        this.clientChannel.setChannel(ctx.channel());
+        this.channel = new NettyChannel(ctx);
     }
 
     @Override
@@ -55,13 +55,13 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> i
     }
 
     public void close() {
-        this.clientChannel.getChannel().writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        channel.writeAndFlush(Unpooled.EMPTY_BUFFER);
     }
 
-    public RPCFuture sendRequest(RpcRequest request) {
+    public RPCFuture sendRequest(final RpcRequest request) {
         RPCFuture rpcFuture = new RPCFuture(request);
         pendingRpc.put(request.getRequestId(), rpcFuture);
-        this.clientChannel.writeAndFlush(request);
+        channel.writeAndFlush(request);
         return rpcFuture;
     }
 }

@@ -6,6 +6,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.miaohong.newfishchatserver.core.rpc.client.transport.NettyClientHandler;
 import org.miaohong.newfishchatserver.core.util.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +33,8 @@ public class ConnectionManager {
             600L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(65536));
 
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
-    private CopyOnWriteArrayList<RpcClientHandler> connectedHandlers = new CopyOnWriteArrayList<>();
-    private Map<InetSocketAddress, RpcClientHandler> connectedServerNodes = new ConcurrentHashMap<>();
+    private CopyOnWriteArrayList<NettyClientHandler> connectedHandlers = new CopyOnWriteArrayList<>();
+    private Map<InetSocketAddress, NettyClientHandler> connectedServerNodes = new ConcurrentHashMap<>();
 
     private ReentrantLock lock = new ReentrantLock();
     private Condition connected = lock.newCondition();
@@ -70,11 +71,11 @@ public class ConnectionManager {
 
             // Close and remove invalid server nodes
             for (int i = 0; i < connectedHandlers.size(); ++i) {
-                RpcClientHandler connectedServerHandler = connectedHandlers.get(i);
-                SocketAddress remotePeer = connectedServerHandler.getClientChannel().getChannel().remoteAddress();
+                NettyClientHandler connectedServerHandler = connectedHandlers.get(i);
+                SocketAddress remotePeer = connectedServerHandler.getChannel().remoteAddress();
                 if (!newAllServerNodeSet.contains(remotePeer)) {
                     LOG.info("Remove invalid server node {}", remotePeer);
-                    RpcClientHandler handler = connectedServerNodes.get(remotePeer);
+                    NettyClientHandler handler = connectedServerNodes.get(remotePeer);
                     if (handler != null) {
                         handler.close();
                     }
@@ -85,9 +86,9 @@ public class ConnectionManager {
 
         } else { // No available server node ( All server nodes are down )
             LOG.error("No available server node. All server nodes are down !!!");
-            for (final RpcClientHandler connectedServerHandler : connectedHandlers) {
-                SocketAddress remotePeer = connectedServerHandler.getClientChannel().getChannel().remoteAddress();
-                RpcClientHandler handler = connectedServerNodes.get(remotePeer);
+            for (final NettyClientHandler connectedServerHandler : connectedHandlers) {
+                SocketAddress remotePeer = connectedServerHandler.getChannel().remoteAddress();
+                NettyClientHandler handler = connectedServerNodes.get(remotePeer);
                 handler.close();
                 connectedServerNodes.remove(connectedServerHandler);
             }
@@ -96,10 +97,10 @@ public class ConnectionManager {
 
     }
 
-    public void reconnect(final RpcClientHandler handler, final SocketAddress remotePeer) {
+    public void reconnect(final NettyClientHandler handler, final SocketAddress remotePeer) {
         if (handler != null) {
             connectedHandlers.remove(handler);
-            connectedServerNodes.remove(handler.getClientChannel().getChannel().remoteAddress());
+            connectedServerNodes.remove(handler.getChannel().remoteAddress());
         }
         connectServerNode((InetSocketAddress) remotePeer);
     }
@@ -120,7 +121,7 @@ public class ConnectionManager {
                     public void operationComplete(final ChannelFuture channelFuture) {
                         if (channelFuture.isSuccess()) {
                             LOG.debug("Successfully connect to remote server. remote peer = {}", remotePeer);
-                            RpcClientHandler handler = channelFuture.channel().pipeline().get(RpcClientHandler.class);
+                            NettyClientHandler handler = channelFuture.channel().pipeline().get(NettyClientHandler.class);
                             addHandler(handler);
                         }
                     }
@@ -129,9 +130,9 @@ public class ConnectionManager {
         });
     }
 
-    private void addHandler(RpcClientHandler handler) {
+    private void addHandler(NettyClientHandler handler) {
         connectedHandlers.add(handler);
-        InetSocketAddress remoteAddress = (InetSocketAddress) handler.getClientChannel().getChannel().remoteAddress();
+        InetSocketAddress remoteAddress = (InetSocketAddress) handler.getChannel().remoteAddress();
         connectedServerNodes.put(remoteAddress, handler);
         signalAvailableHandler();
     }
@@ -155,7 +156,7 @@ public class ConnectionManager {
         }
     }
 
-    public RpcClientHandler chooseHandler() {
+    public NettyClientHandler chooseHandler() {
         int size = connectedHandlers.size();
         while (isRuning && size <= 0) {
             try {
@@ -175,7 +176,7 @@ public class ConnectionManager {
     public void stop() {
         isRuning = false;
         for (int i = 0; i < connectedHandlers.size(); ++i) {
-            RpcClientHandler connectedServerHandler = connectedHandlers.get(i);
+            NettyClientHandler connectedServerHandler = connectedHandlers.get(i);
             connectedServerHandler.close();
         }
         signalAvailableHandler();

@@ -4,8 +4,8 @@ import lombok.Getter;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBus;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBusManager;
 import org.miaohong.newfishchatserver.core.rpc.registry.zk.ZookeeperRegistry;
-import org.miaohong.newfishchatserver.core.rpc.server.RpcServerHandler;
 import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;
+import org.miaohong.newfishchatserver.core.rpc.server.transport.handler.NettyServerHandler;
 
 
 public class ServiceConfig<T> {
@@ -18,7 +18,7 @@ public class ServiceConfig<T> {
     private ServiceBootstrap serviceBootstrap;
 
     public ServiceConfig() {
-        eventBus.register(new RpcServerHandler.RpcServerHandlerListener());
+        eventBus.register(new NettyServerHandler.RpcServerHandlerListener());
     }
 
     public synchronized void export() {

@@ -5,10 +5,10 @@ import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.This;
 import org.miaohong.newfishchatserver.annotations.Internal;
-import org.miaohong.newfishchatserver.core.rpc.client.ConnectionManager;
+import org.miaohong.newfishchatserver.core.rpc.client.ConnectionManage;
 import org.miaohong.newfishchatserver.core.rpc.client.RPCFuture;
-import org.miaohong.newfishchatserver.core.rpc.client.RpcClientHandler;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.AbstractInvocationHandler;
+import org.miaohong.newfishchatserver.core.rpc.client.transport.NettyClientHandler;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +45,11 @@ public class BytebuddyInvocationHandler extends AbstractInvocationHandler {
         LOG.debug(method.getDeclaringClass().getName());
         LOG.debug(method.getName());
 
-        RpcClientHandler handler = ConnectionManager.getINSTANCE().chooseHandler();
-        LOG.info("choose handler");
+        LOG.info("start choose handler");
+
+        NettyClientHandler handler = ConnectionManage.getINSTANCE().chooseHandler();
+
+        LOG.info("choose handler {}", handler);
 
         RPCFuture rpcFuture = handler.sendRequest(request);
         return rpcFuture.get();

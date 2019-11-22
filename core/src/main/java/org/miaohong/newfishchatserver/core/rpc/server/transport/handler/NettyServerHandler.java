@@ -1,9 +1,7 @@
-package org.miaohong.newfishchatserver.core.rpc.server;
+package org.miaohong.newfishchatserver.core.rpc.server.transport.handler;
 
 import com.google.common.eventbus.Subscribe;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
@@ -12,7 +10,8 @@ import org.miaohong.newfishchatserver.core.metric.MetricGroup;
 import org.miaohong.newfishchatserver.core.metric.SimpleCounter;
 import org.miaohong.newfishchatserver.core.rpc.RpcContext;
 import org.miaohong.newfishchatserver.core.rpc.RpcHandler;
-import org.miaohong.newfishchatserver.core.rpc.eventbus.ServiceRegistedEvent;
+import org.miaohong.newfishchatserver.core.rpc.channel.NettyChannel;
+import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServiceRegistedEvent;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcResponse;
 import org.miaohong.newfishchatserver.core.rpc.server.proxy.CglibProxy;
@@ -25,16 +24,17 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-@ChannelHandler.Sharable
-public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> implements RpcHandler {
+@io.netty.channel.ChannelHandler.Sharable
+public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> implements RpcHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RpcServerHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NettyServerHandler.class);
     private static final Map<String, Object> SERVICE_MAP = new ConcurrentHashMap<>();
     private final Map<String, Channel> channels = new ConcurrentHashMap<>();
     private Counter recordRequestNum;
     private MetricGroup serverMetricGroup;
+    private org.miaohong.newfishchatserver.core.rpc.channel.Channel channel;
 
-    public RpcServerHandler(MetricGroup serverMetricGroup) {
+    public NettyServerHandler(MetricGroup serverMetricGroup) {
         LOG.info("enter RpcServerHandler");
         this.serverMetricGroup = serverMetricGroup;
         if (this.recordRequestNum == null) {
@@ -44,19 +44,17 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> im
 //        this.serverMetricGroup.counter("record-request-num", this.recordRequestNum);
     }
 
-
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         super.channelRegistered(ctx);
+        channel = new NettyChannel(ctx);
         LOG.info("client register {}", ctx.channel().remoteAddress());
         channels.put(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), ctx.channel());
-//        this.recordRequestNum.inc();
     }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         LOG.info("client unregister {}", ctx.channel().remoteAddress());
-//        channels.remove(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()));
         super.channelUnregistered(ctx);
     }
 
@@ -85,13 +83,10 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> im
         }
 
         LOG.info("start to send response");
-        ctx.writeAndFlush(response).addListener((ChannelFutureListener) channelFuture -> {
-            LOG.info("Send response for request {}", request.getRequestId());
-            LOG.info("response is {}", response);
-        });
+        channel.writeAndFlush(response);
     }
 
-    private Object handle(RpcRequest request) {
+    private Object handle(final RpcRequest request) {
         RpcContext.init(request);
         String interfaceId = request.getInterfaceId();
         Object serviceBean = SERVICE_MAP.get(interfaceId);

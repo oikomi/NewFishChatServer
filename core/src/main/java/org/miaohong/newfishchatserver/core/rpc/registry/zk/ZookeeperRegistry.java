@@ -15,7 +15,7 @@ import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.miaohong.newfishchatserver.core.rpc.client.ConsumerConfig;
-import org.miaohong.newfishchatserver.core.rpc.eventbus.ServiceRegistedEvent;
+import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServiceRegistedEvent;
 import org.miaohong.newfishchatserver.core.rpc.registry.Register;
 import org.miaohong.newfishchatserver.core.rpc.registry.RegistryPropConfig;
 import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;

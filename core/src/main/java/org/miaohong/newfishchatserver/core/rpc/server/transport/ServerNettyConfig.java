@@ -2,6 +2,7 @@ package org.miaohong.newfishchatserver.core.rpc.server.transport;
 
 import com.google.common.base.Preconditions;
 import lombok.Data;
+import org.miaohong.newfishchatserver.core.util.HardwareUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,7 @@ public class ServerNettyConfig {
     private static final Logger LOG = LoggerFactory.getLogger(ServerNettyConfig.class);
     private static final int MAX_PORT = 65535;
     private final InetAddress serverAddress;
-    private final int serverNumThreads = Math.max(Runtime.getRuntime().availableProcessors() + 1, 32);
+    private final int serverNumThreads = Math.min(HardwareUtils.getNumberCPUCores() + 1, 32);
     private final int serverPort;
 
     public ServerNettyConfig(
