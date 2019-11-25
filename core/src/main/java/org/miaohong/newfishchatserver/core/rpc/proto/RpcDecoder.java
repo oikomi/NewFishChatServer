@@ -12,8 +12,8 @@ import java.util.List;
 
 public class RpcDecoder extends ByteToMessageDecoder {
 
+    public static final String NAME = "message decoder";
     private static final Logger LOG = LoggerFactory.getLogger(RpcDecoder.class);
-
     private Class<?> genericClass;
 
     public RpcDecoder(Class<?> genericClass) {

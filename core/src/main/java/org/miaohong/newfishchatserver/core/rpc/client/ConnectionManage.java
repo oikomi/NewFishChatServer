@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class ConnectionManage {
 
@@ -22,6 +23,13 @@ public class ConnectionManage {
     }
 
     public NettyClientHandler chooseHandler() {
+        if (connectedHandlers.size() == 0) {
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         return connectedHandlers.get(0);
     }
 

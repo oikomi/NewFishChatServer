@@ -1,32 +1,34 @@
 package org.miaohong.newfishchatserver.core.metric;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class SimpleCounter implements Counter {
 
-    private long count;
+    private AtomicLong count = new AtomicLong();
 
     @Override
     public void inc() {
-        count++;
+        count.incrementAndGet();
     }
 
     @Override
     public void inc(long n) {
-        count += n;
+        count.addAndGet(n);
     }
 
     @Override
     public void dec() {
-        count--;
+        count.decrementAndGet();
     }
 
     @Override
     public void dec(long n) {
-        count -= n;
+        count.addAndGet(-n);
     }
 
     @Override
     public long getCount() {
-        return count;
+        return count.get();
     }
 
 }

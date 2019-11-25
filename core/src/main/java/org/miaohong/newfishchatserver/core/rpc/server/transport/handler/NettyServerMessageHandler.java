@@ -4,6 +4,7 @@ import com.google.common.eventbus.Subscribe;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.miaohong.newfishchatserver.core.conf.CommonNettyPropConfig;
 import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
 import org.miaohong.newfishchatserver.core.metric.Counter;
 import org.miaohong.newfishchatserver.core.metric.MetricGroup;
@@ -11,43 +12,74 @@ import org.miaohong.newfishchatserver.core.metric.SimpleCounter;
 import org.miaohong.newfishchatserver.core.rpc.RpcContext;
 import org.miaohong.newfishchatserver.core.rpc.RpcHandler;
 import org.miaohong.newfishchatserver.core.rpc.channel.NettyChannel;
+import org.miaohong.newfishchatserver.core.rpc.concurrency.NamedThreadFactory;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServiceRegistedEvent;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcResponse;
 import org.miaohong.newfishchatserver.core.rpc.server.proxy.CglibProxy;
 import org.miaohong.newfishchatserver.core.util.NetUtils;
+import org.miaohong.newfishchatserver.core.util.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
 
 
 @io.netty.channel.ChannelHandler.Sharable
-public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> implements RpcHandler {
+public class NettyServerMessageHandler extends SimpleChannelInboundHandler<RpcRequest> implements RpcHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NettyServerHandler.class);
+    public static final String NAME = "message handler";
+    private static final Logger LOG = LoggerFactory.getLogger(NettyServerMessageHandler.class);
     private static final Map<String, Object> SERVICE_MAP = new ConcurrentHashMap<>();
     private final Map<String, Channel> channels = new ConcurrentHashMap<>();
     private Counter recordRequestNum;
     private MetricGroup serverMetricGroup;
+    private CommonNettyPropConfig nettyPropConfig;
     private org.miaohong.newfishchatserver.core.rpc.channel.Channel channel;
 
-    public NettyServerHandler(MetricGroup serverMetricGroup) {
-        LOG.info("enter RpcServerHandler");
+    private ThreadPoolExecutor threadExecutor;
+
+    public NettyServerMessageHandler(MetricGroup serverMetricGroup, CommonNettyPropConfig nettyPropConfig) {
+        LOG.info("enter NettyServerMessageHandler");
         this.serverMetricGroup = serverMetricGroup;
+        this.nettyPropConfig = nettyPropConfig;
         if (this.recordRequestNum == null) {
             this.recordRequestNum = new SimpleCounter();
         }
         //FIXME
-//        this.serverMetricGroup.counter("record-request-num", this.recordRequestNum);
+        this.serverMetricGroup.counter("record-request-num", this.recordRequestNum);
+        this.threadExecutor = getExecutor();
+    }
+
+    private ThreadPoolExecutor getExecutor() {
+        RejectedExecutionHandler handler = (Runnable r, ThreadPoolExecutor executor) -> {
+            LOG.error("Task:{} has been reject because of threadPool exhausted!" +
+                            " pool:{}, active:{}, queue:{}, taskcnt: {}", r,
+                    executor.getPoolSize(),
+                    executor.getActiveCount(),
+                    executor.getQueue().size(),
+                    executor.getTaskCount());
+            throw new RejectedExecutionException("Callback handler thread pool has bean exhausted");
+        };
+
+        return ThreadPoolUtils.newCachedThreadPool(
+                nettyPropConfig.getNettyServerPoolCore(),
+                nettyPropConfig.getNettyServerPoolMax(),
+                nettyPropConfig.getNettyServerPoolAlive(),
+                ThreadPoolUtils.buildQueue(nettyPropConfig.getNettyServerPoolQueue()),
+                new NamedThreadFactory("server message handler"), handler);
     }
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         super.channelRegistered(ctx);
         channel = new NettyChannel(ctx);
+        recordRequestNum.inc();
         LOG.info("client register {}", ctx.channel().remoteAddress());
         channels.put(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), ctx.channel());
     }
@@ -55,6 +87,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         LOG.info("client unregister {}", ctx.channel().remoteAddress());
+        recordRequestNum.dec();
         super.channelUnregistered(ctx);
     }
 
@@ -70,20 +103,23 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
 
     @Override
     public void channelRead0(final ChannelHandlerContext ctx, final RpcRequest request) {
-        LOG.info("Receive request {}", request.getRequestId());
-        LOG.info("client set {}", channels);
-        RpcResponse response = new RpcResponse();
-        response.setRequestId(request.getRequestId());
-        try {
-            Object result = handle(request);
-            response.setResult(result);
-        } catch (Exception e) {
-            response.setError("failed");
-            LOG.error("RPC Server handle request error", e);
-        }
+        threadExecutor.submit(() -> {
+            LOG.info("Receive request {}", request.getRequestId());
+            LOG.info("client set {}", channels);
 
-        LOG.info("start to send response");
-        channel.writeAndFlush(response);
+            RpcResponse response = new RpcResponse();
+            response.setRequestId(request.getRequestId());
+            try {
+                Object result = handle(request);
+                response.setResult(result);
+            } catch (Exception e) {
+                response.setError("failed");
+                LOG.error("RPC Server handle request error", e);
+            }
+
+            LOG.info("start to send response");
+            channel.writeAndFlush(response);
+        });
     }
 
     private Object handle(final RpcRequest request) {

@@ -7,7 +7,7 @@ public class RpcClientConfig extends BasePropConfig {
     private RpcClientConfig() {
     }
 
-    public static RpcClientConfig getINSTANCE() {
+    public static RpcClientConfig get() {
         return RpcClientConfig.Inner.INSTANCE;
     }
 

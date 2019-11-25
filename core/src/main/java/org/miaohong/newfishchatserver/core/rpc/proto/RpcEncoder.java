@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 
 public class RpcEncoder extends MessageToByteEncoder {
 
+    public static final String NAME = "message encoder";
     private static final Logger LOG = LoggerFactory.getLogger(RpcEncoder.class);
-
     private Class<?> genericClass;
 
     public RpcEncoder(Class<?> genericClass) {

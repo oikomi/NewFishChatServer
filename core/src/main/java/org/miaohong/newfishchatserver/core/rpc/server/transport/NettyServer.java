@@ -56,7 +56,7 @@ public class NettyServer {
                        MetricGroup serverMetricGroup) throws UnknownHostException {
         this.serverName = serverName;
         this.serverNettyConfig = new ServerNettyConfig(serverAddr, serverPort);
-        this.commonNettyPropConfig = CommonNettyPropConfig.getINSTANCE();
+        this.commonNettyPropConfig = CommonNettyPropConfig.get();
         this.serverMetricGroup = serverMetricGroup;
     }
 
@@ -79,7 +79,6 @@ public class NettyServer {
         setBootstrapOption();
 
         bindFuture = bootstrap.bind().syncUninterruptibly();
-
         ChannelFuture channelFuture = bindFuture.addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
                 final long duration = System.currentTimeMillis() - start;
@@ -149,7 +148,7 @@ public class NettyServer {
                 .option(ChannelOption.SO_REUSEADDR, commonNettyPropConfig.getChannelOptionForSOREUSEADDR())
                 .childOption(ChannelOption.SO_KEEPALIVE, commonNettyPropConfig.getChannelOptionForSOKEEPALIVE())
                 .childOption(ChannelOption.TCP_NODELAY, commonNettyPropConfig.getgetChannelOptionForTCPNODELAY())
-                .childHandler(new ServerchannelInitializer(serverMetricGroup));
+                .childHandler(new ServerchannelInitializer(serverMetricGroup, commonNettyPropConfig));
     }
 
     public void start() {

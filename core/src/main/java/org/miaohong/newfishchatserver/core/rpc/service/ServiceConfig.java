@@ -5,7 +5,7 @@ import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBus;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBusManager;
 import org.miaohong.newfishchatserver.core.rpc.registry.zk.ZookeeperRegistry;
 import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;
-import org.miaohong.newfishchatserver.core.rpc.server.transport.handler.NettyServerHandler;
+import org.miaohong.newfishchatserver.core.rpc.server.transport.handler.NettyServerMessageHandler;
 
 
 public class ServiceConfig<T> {
@@ -18,7 +18,7 @@ public class ServiceConfig<T> {
     private ServiceBootstrap serviceBootstrap;
 
     public ServiceConfig() {
-        eventBus.register(new NettyServerHandler.RpcServerHandlerListener());
+        eventBus.register(new NettyServerMessageHandler.RpcServerHandlerListener());
     }
 
     public synchronized void export() {

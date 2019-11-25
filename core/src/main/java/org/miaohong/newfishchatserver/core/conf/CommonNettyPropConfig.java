@@ -8,7 +8,7 @@ public class CommonNettyPropConfig extends BasePropConfig {
     private CommonNettyPropConfig() {
     }
 
-    public static CommonNettyPropConfig getINSTANCE() {
+    public static CommonNettyPropConfig get() {
         return Inner.INSTANCE;
     }
 
@@ -47,6 +47,22 @@ public class CommonNettyPropConfig extends BasePropConfig {
 
     public int getChannelOptionForSORCVBUF() {
         return getInt("netty.ChannelOption.SO_RCVBUF", 0);
+    }
+
+    public int getNettyServerPoolCore() {
+        return getInt("netty.server.pool.core", 0);
+    }
+
+    public int getNettyServerPoolMax() {
+        return getInt("netty.server.pool.max", 0);
+    }
+
+    public int getNettyServerPoolQueue() {
+        return getInt("netty.server.pool.queue", 0);
+    }
+
+    public int getNettyServerPoolAlive() {
+        return getInt("netty.server.pool.alive", 0);
     }
 
     @Override
