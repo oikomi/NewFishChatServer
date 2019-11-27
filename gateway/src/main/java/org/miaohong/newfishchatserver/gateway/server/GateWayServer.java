@@ -1,6 +1,6 @@
 package org.miaohong.newfishchatserver.gateway.server;
 
-import org.miaohong.newfishchatserver.core.conf.PropConfig;
+import org.miaohong.newfishchatserver.core.conf.prop.PropConfig;
 import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.service.ServiceConfig;
 import org.miaohong.newfishchatserver.core.runtime.JvmShutdownSafeguard;
@@ -29,6 +29,12 @@ public class GateWayServer {
 
         PropConfig propConfig = new GatewayServerConfig();
 
+        ServiceConfig<GatewayProto> serviceConfig = new ServiceConfig<>()
+                .setInterfaceId(GatewayProto.class.getName())
+                .setRef(new GatewayImpl());
+
+        serviceConfig.export();
+
         ServerConfig serverConfig = new ServerConfig()
                 .setServerName(buildServerName(propConfig.getString("server.bind.addr"),
                         propConfig.getInt("server.bind.port", 15000)))
@@ -36,11 +42,6 @@ public class GateWayServer {
                 .setPort(propConfig.getInt("server.bind.port", 15000))
                 .buildIfAbsent();
 
-        ServiceConfig<GatewayProto> serviceConfig = new ServiceConfig<>()
-                .setInterfaceId(GatewayProto.class.getName())
-                .setRef(new GatewayImpl())
-                .setServerConfig(serverConfig);
 
-        serviceConfig.export();
     }
 }

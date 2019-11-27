@@ -1,0 +1,6 @@
+sources:
+  - org.miaohong.newfishchatserver.core.metrics.source.JvmSource
+
+
+sinks:
+  - org.miaohong.newfishchatserver.core.metrics.sink.ConsoleSink

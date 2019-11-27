@@ -19,6 +19,8 @@ public class ServiceConfig<T> {
 
     public ServiceConfig() {
         eventBus.register(new NettyServerMessageHandler.RpcServerHandlerListener());
+        eventBus.register(new ServiceBootstrap.ServiceBootstrapListener());
+
     }
 
     public synchronized void export() {

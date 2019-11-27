@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.conf;
+package org.miaohong.newfishchatserver.core.conf.prop;
 
 
 import org.miaohong.newfishchatserver.core.util.PropUtils;
@@ -17,7 +17,7 @@ public abstract class BasePropConfig implements PropConfig, java.io.Serializable
 
     @Override
     public String getString(String propName) {
-        return properties.getProperty(propName);
+        return PropUtils.getStringValue(propName, properties);
     }
 
     @Override

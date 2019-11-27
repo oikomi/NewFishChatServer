@@ -14,10 +14,13 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.miaohong.newfishchatserver.annotations.Internal;
-import org.miaohong.newfishchatserver.core.conf.CommonNettyPropConfig;
+import org.miaohong.newfishchatserver.core.conf.prop.CommonNettyPropConfig;
 import org.miaohong.newfishchatserver.core.execption.FatalExitExceptionHandler;
 import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
-import org.miaohong.newfishchatserver.core.metric.MetricGroup;
+import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBus;
+import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBusManager;
+import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServerStartedEvent;
+import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,23 +44,18 @@ public class NettyServer {
     private final ServerNettyConfig serverNettyConfig;
 
     private final CommonNettyPropConfig commonNettyPropConfig;
-
+    private final EventBus eventBus = EventBusManager.get();
     private String serverName;
-
     private ServerBootstrap bootstrap;
-
     private ChannelFuture bindFuture;
+    private ServerConfig serverConfig;
 
-    private MetricGroup serverMetricGroup;
-
-    public NettyServer(String serverName,
-                       String serverAddr,
-                       int serverPort,
-                       MetricGroup serverMetricGroup) throws UnknownHostException {
-        this.serverName = serverName;
-        this.serverNettyConfig = new ServerNettyConfig(serverAddr, serverPort);
+    public NettyServer(ServerConfig serverConfig) throws UnknownHostException {
+        this.serverConfig = serverConfig;
+        this.serverName = serverConfig.getServerName();
+        this.serverNettyConfig = new ServerNettyConfig(
+                serverConfig.getHost(), serverConfig.getPort());
         this.commonNettyPropConfig = CommonNettyPropConfig.get();
-        this.serverMetricGroup = serverMetricGroup;
     }
 
     private static ThreadFactory getNamedThreadFactory(String name) {
@@ -68,7 +66,6 @@ public class NettyServer {
         Preconditions.checkState(bootstrap == null, "Netty server has already been initialized.");
         Preconditions.checkNotNull(serverNettyConfig);
         Preconditions.checkNotNull(commonNettyPropConfig);
-        Preconditions.checkNotNull(serverMetricGroup);
     }
 
     private void init() {
@@ -85,6 +82,7 @@ public class NettyServer {
                 LOG.info("Netty Server[{}] bind to {}:{} success (took {} ms)!",
                         serverName, serverNettyConfig.getServerAddress(), serverNettyConfig.getServerPort(), duration);
 
+                eventBus.post(new ServerStartedEvent(serverConfig));
             } else {
                 LOG.error("Netty Server[{}] bind to {}:{} failed!",
                         serverName, serverNettyConfig.getServerAddress(), serverNettyConfig.getServerPort());
@@ -148,7 +146,7 @@ public class NettyServer {
                 .option(ChannelOption.SO_REUSEADDR, commonNettyPropConfig.getChannelOptionForSOREUSEADDR())
                 .childOption(ChannelOption.SO_KEEPALIVE, commonNettyPropConfig.getChannelOptionForSOKEEPALIVE())
                 .childOption(ChannelOption.TCP_NODELAY, commonNettyPropConfig.getgetChannelOptionForTCPNODELAY())
-                .childHandler(new ServerchannelInitializer(serverMetricGroup, commonNettyPropConfig));
+                .childHandler(new ServerchannelInitializer(commonNettyPropConfig));
     }
 
     public void start() {

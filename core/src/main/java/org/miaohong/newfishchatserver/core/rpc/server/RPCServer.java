@@ -5,8 +5,7 @@ import com.google.common.base.Strings;
 import lombok.Getter;
 import org.miaohong.newfishchatserver.core.execption.CoreErrorConstant;
 import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
-import org.miaohong.newfishchatserver.core.metric.MetricRegistryImpl;
-import org.miaohong.newfishchatserver.core.metric.metricgroup.ServerMetricGroup;
+import org.miaohong.newfishchatserver.core.metrics.MetricSystem;
 import org.miaohong.newfishchatserver.core.rpc.server.transport.NettyServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,17 +17,14 @@ public class RPCServer extends Server {
 
     private NettyServer nettyServer;
 
-    private ServerConfig serverConfig;
+    private MetricSystem metricSystem = new MetricSystem();
 
     @Getter
     private volatile ServerState serverState = ServerState.INIT;
 
     public RPCServer(ServerConfig serverConfig) {
-        this.serverConfig = serverConfig;
         try {
-            nettyServer = new NettyServer(this.serverConfig.getServerName(),
-                    this.serverConfig.getHost(), this.serverConfig.getPort(),
-                    new ServerMetricGroup(new MetricRegistryImpl()));
+            nettyServer = new NettyServer(serverConfig);
             serverState = ServerState.ALIVE;
         } catch (Exception e) {
             LOG.error("RPCServer init failed {}", e.getMessage(), e);
@@ -47,6 +43,7 @@ public class RPCServer extends Server {
     public void start() {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(serverName), "server name is null");
         Preconditions.checkNotNull(nettyServer);
+        metricSystem.start();
         nettyServer.start();
     }
 

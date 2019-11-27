@@ -4,11 +4,8 @@ import com.google.common.eventbus.Subscribe;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import org.miaohong.newfishchatserver.core.conf.CommonNettyPropConfig;
+import org.miaohong.newfishchatserver.core.conf.prop.CommonNettyPropConfig;
 import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
-import org.miaohong.newfishchatserver.core.metric.Counter;
-import org.miaohong.newfishchatserver.core.metric.MetricGroup;
-import org.miaohong.newfishchatserver.core.metric.SimpleCounter;
 import org.miaohong.newfishchatserver.core.rpc.RpcContext;
 import org.miaohong.newfishchatserver.core.rpc.RpcHandler;
 import org.miaohong.newfishchatserver.core.rpc.channel.NettyChannel;
@@ -37,22 +34,14 @@ public class NettyServerMessageHandler extends SimpleChannelInboundHandler<RpcRe
     private static final Logger LOG = LoggerFactory.getLogger(NettyServerMessageHandler.class);
     private static final Map<String, Object> SERVICE_MAP = new ConcurrentHashMap<>();
     private final Map<String, Channel> channels = new ConcurrentHashMap<>();
-    private Counter recordRequestNum;
-    private MetricGroup serverMetricGroup;
     private CommonNettyPropConfig nettyPropConfig;
     private org.miaohong.newfishchatserver.core.rpc.channel.Channel channel;
 
     private ThreadPoolExecutor threadExecutor;
 
-    public NettyServerMessageHandler(MetricGroup serverMetricGroup, CommonNettyPropConfig nettyPropConfig) {
+    public NettyServerMessageHandler(CommonNettyPropConfig nettyPropConfig) {
         LOG.info("enter NettyServerMessageHandler");
-        this.serverMetricGroup = serverMetricGroup;
         this.nettyPropConfig = nettyPropConfig;
-        if (this.recordRequestNum == null) {
-            this.recordRequestNum = new SimpleCounter();
-        }
-        //FIXME
-        this.serverMetricGroup.counter("record-request-num", this.recordRequestNum);
         this.threadExecutor = getExecutor();
     }
 
@@ -79,7 +68,6 @@ public class NettyServerMessageHandler extends SimpleChannelInboundHandler<RpcRe
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         super.channelRegistered(ctx);
         channel = new NettyChannel(ctx);
-        recordRequestNum.inc();
         LOG.info("client register {}", ctx.channel().remoteAddress());
         channels.put(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), ctx.channel());
     }
@@ -87,7 +75,6 @@ public class NettyServerMessageHandler extends SimpleChannelInboundHandler<RpcRe
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         LOG.info("client unregister {}", ctx.channel().remoteAddress());
-        recordRequestNum.dec();
         super.channelUnregistered(ctx);
     }
 
@@ -152,7 +139,6 @@ public class NettyServerMessageHandler extends SimpleChannelInboundHandler<RpcRe
         @Subscribe
         public void doAction(final Object event) {
             LOG.info("Received event [{}] and will take a action", event);
-
             if (event instanceof ServiceRegistedEvent) {
                 ServiceRegistedEvent serviceRegistedEvent = (ServiceRegistedEvent) event;
                 SERVICE_MAP.put(serviceRegistedEvent.getInterfaceId(), serviceRegistedEvent.getRef());

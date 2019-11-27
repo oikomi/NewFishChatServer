@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.conf;
+package org.miaohong.newfishchatserver.core.conf.prop;
 
 public class RpcClientConfig extends BasePropConfig {
 

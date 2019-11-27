@@ -4,8 +4,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.timeout.IdleStateHandler;
-import org.miaohong.newfishchatserver.core.conf.CommonNettyPropConfig;
-import org.miaohong.newfishchatserver.core.metric.MetricGroup;
+import org.miaohong.newfishchatserver.core.conf.prop.CommonNettyPropConfig;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcDecoder;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcEncoder;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
@@ -24,8 +23,8 @@ public class ServerchannelInitializer extends ChannelInitializer<SocketChannel> 
     private NettyServerChannelManagerHandler channelManagerHandler = new NettyServerChannelManagerHandler();
     private NettyServerMessageHandler messageHandler;
 
-    public ServerchannelInitializer(MetricGroup serverMetricGroup, CommonNettyPropConfig nettyPropConfig) {
-        this.messageHandler = new NettyServerMessageHandler(serverMetricGroup, nettyPropConfig);
+    public ServerchannelInitializer(CommonNettyPropConfig nettyPropConfig) {
+        this.messageHandler = new NettyServerMessageHandler(nettyPropConfig);
     }
 
     @Override

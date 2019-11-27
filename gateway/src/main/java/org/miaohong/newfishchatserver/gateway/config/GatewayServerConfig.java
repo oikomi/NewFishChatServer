@@ -1,7 +1,7 @@
 package org.miaohong.newfishchatserver.gateway.config;
 
 
-import org.miaohong.newfishchatserver.core.conf.BasePropConfig;
+import org.miaohong.newfishchatserver.core.conf.prop.BasePropConfig;
 
 public class GatewayServerConfig extends BasePropConfig {
 

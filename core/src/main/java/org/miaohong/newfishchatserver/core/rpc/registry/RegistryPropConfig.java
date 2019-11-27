@@ -1,7 +1,7 @@
 package org.miaohong.newfishchatserver.core.rpc.registry;
 
 
-import org.miaohong.newfishchatserver.core.conf.BasePropConfig;
+import org.miaohong.newfishchatserver.core.conf.prop.BasePropConfig;
 
 public class RegistryPropConfig extends BasePropConfig {
 

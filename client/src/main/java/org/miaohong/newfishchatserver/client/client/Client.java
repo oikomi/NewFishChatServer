@@ -27,7 +27,7 @@ public class Client {
             e.printStackTrace();
         }
 //        ConnectionManager.getINSTANCE().updateConnectedServer(Collections.singletonList("127.0.0.1:15000"));
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 1; i++) {
             LOG.info("i = {}", i);
             GatewayProto s = rpcClient.refer();
             Person person = s.person();

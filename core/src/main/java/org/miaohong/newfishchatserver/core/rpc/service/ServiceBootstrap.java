@@ -1,14 +1,24 @@
 package org.miaohong.newfishchatserver.core.rpc.service;
 
 import com.google.common.base.Preconditions;
+import com.google.common.eventbus.Subscribe;
 import org.miaohong.newfishchatserver.core.rpc.concurrency.NamedThreadFactory;
+import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServerStartedEvent;
 import org.miaohong.newfishchatserver.core.rpc.registry.Register;
+import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ServiceBootstrap<T> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ServiceBootstrap.class);
+    private static ReentrantLock lock = new ReentrantLock();
+    private static Condition connected = lock.newCondition();
     private final ExecutorService executorService = Executors.newSingleThreadExecutor(
             new NamedThreadFactory("service register"));
     private Register register;
@@ -19,16 +29,61 @@ public class ServiceBootstrap<T> {
         this.serviceConfig = serviceConfig;
     }
 
+    private static void signalAvailable() {
+        lock.lock();
+        try {
+            connected.signalAll();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void waitingForServerStarted() throws InterruptedException {
+        lock.lock();
+        try {
+            connected.await();
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public void export() {
-        Preconditions.checkState(serviceConfig.getServerConfig() != null,
-                "service config can not empty");
+        LOG.info("do service export");
+
         executorService.submit(() -> {
+            try {
+                waitingForServerStarted();
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+
+            serviceConfig.setServerConfig(ServiceBootstrapListener.serverConfig);
+            LOG.info("start to export service");
+            Preconditions.checkState(serviceConfig.getServerConfig() != null,
+                    "server config can not empty");
+
             register.start();
             register.register(serviceConfig);
         });
     }
 
     public void unExport() {
+    }
+
+    public static class ServiceBootstrapListener {
+
+        private static ServerConfig serverConfig;
+
+        @Subscribe
+        public void doAction(final Object event) {
+            LOG.info("Received event [{}] and will take a action", event);
+            if (event instanceof ServerStartedEvent) {
+                LOG.info("server is started");
+                ServerStartedEvent serverStartedEvent = (ServerStartedEvent) event;
+                serverConfig = serverStartedEvent.getServerConfig();
+                signalAvailable();
+            }
+        }
     }
 
 }
