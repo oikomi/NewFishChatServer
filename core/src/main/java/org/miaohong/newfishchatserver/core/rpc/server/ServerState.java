@@ -9,7 +9,7 @@ public enum ServerState {
 
     public final int value;
 
-    private ServerState(int value) {
+    ServerState(int value) {
         this.value = value;
     }
 

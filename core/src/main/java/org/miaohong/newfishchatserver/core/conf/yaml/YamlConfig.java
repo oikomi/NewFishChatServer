@@ -1,8 +1,8 @@
 package org.miaohong.newfishchatserver.core.conf.yaml;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.miaohong.newfishchatserver.core.util.ClassLoaderUtils;
+import org.miaohong.newfishchatserver.core.util.StandardYamlObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +26,7 @@ public class YamlConfig<T> extends AbstractConfig<T> {
     @Override
     public T load() {
         try {
-            YAMLFactory yamlFactory = new YAMLFactory();
-            ObjectMapper objectMapper = new ObjectMapper(yamlFactory);
+            ObjectMapper objectMapper = StandardYamlObjectMapper.MAPPER;
             return objectMapper.readValue(sourceFile, clazz);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);

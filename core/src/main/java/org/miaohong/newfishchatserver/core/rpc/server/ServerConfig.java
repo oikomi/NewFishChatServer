@@ -2,14 +2,20 @@ package org.miaohong.newfishchatserver.core.rpc.server;
 
 
 import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
+import org.miaohong.newfishchatserver.core.util.HardwareUtils;
 import org.miaohong.newfishchatserver.core.util.NetUtils;
 
 public class ServerConfig extends AbstractServerConfig {
 
+    private final int serverNumThreads = Math.min(HardwareUtils.getNumberCPUCores() + 1, 32);
     private String serverName;
     private String host;
     private int port;
     private Server server;
+
+    public int getServerNumThreads() {
+        return serverNumThreads;
+    }
 
     public String getServerName() {
         return serverName;
