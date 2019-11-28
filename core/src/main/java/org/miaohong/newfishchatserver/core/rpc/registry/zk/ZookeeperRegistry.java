@@ -1,22 +1,28 @@
 package org.miaohong.newfishchatserver.core.rpc.registry.zk;
 
-import com.google.common.base.Strings;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.UnhandledErrorListener;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.framework.state.ConnectionState;
-import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
+import org.miaohong.newfishchatserver.core.execption.SystemCoreException;
 import org.miaohong.newfishchatserver.core.rpc.client.ConsumerConfig;
+import org.miaohong.newfishchatserver.core.rpc.eventbus.event.EventAction;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServiceRegistedEvent;
-import org.miaohong.newfishchatserver.core.rpc.registry.Register;
+import org.miaohong.newfishchatserver.core.rpc.registry.AbstractRegister;
+import org.miaohong.newfishchatserver.core.rpc.registry.RegisterRole;
 import org.miaohong.newfishchatserver.core.rpc.registry.RegistryPropConfig;
 import org.miaohong.newfishchatserver.core.rpc.server.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.service.config.ServiceConfig;
@@ -25,38 +31,29 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
-public class ZookeeperRegistry extends Register {
+public class ZookeeperRegistry extends AbstractRegister implements UnhandledErrorListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(ZookeeperRegistry.class);
     private static final String CONTEXT_SEP = "/";
-    private final static byte[] PROVIDER_OFFLINE = new byte[]{0};
-    private final static byte[] PROVIDER_ONLINE = new byte[]{1};
-    private static final ConcurrentMap<ConsumerConfig, PathChildrenCache> INTERFACE_SERVICE_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<ConsumerConfig, PathChildrenCache>
+            INTERFACE_SERVICE_CACHE = Maps.newConcurrentMap();
+
+    private static final Set<ServiceConfig> SERVICE_CONFIG_SET = Sets.newConcurrentHashSet();
+
     private CuratorFramework zkClient;
-    private String rootPath = "/fishchatserver/rpc/";
-    private boolean ephemeralNode = true;
+    private boolean ephemeralNode = false;
     private ServiceObserver serviceObserver;
 
     public ZookeeperRegistry() {
-        super(RegistryPropConfig.getINSTANCE());
+        super(RegistryPropConfig.get());
     }
 
-    public static void main(String[] args) {
-        new ZookeeperRegistry().start();
-    }
-
-    private synchronized void init() {
-        if (zkClient != null) {
-            return;
-        }
-        String addressInput = registryPropConfig.getAddress();
-        if (Strings.isNullOrEmpty(addressInput)) {
-            throw new RuntimeException("Address of zookeeper registry is empty.");
-        }
-        RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
+    private void buildZkClient() {
+        RetryPolicy retryPolicy = new ExponentialBackoffRetry(
+                registryPropConfig.getRetryWait(), registryPropConfig.getMaxRetryAttempts());
         CuratorFrameworkFactory.Builder zkClientuilder = CuratorFrameworkFactory.builder()
                 .connectString(registryPropConfig.getAddress())
                 .sessionTimeoutMs(registryPropConfig.getConnectTimeout())
@@ -66,39 +63,57 @@ public class ZookeeperRegistry extends Register {
                 .defaultData(null);
 
         zkClient = zkClientuilder.build();
+    }
+
+    private synchronized void init() {
+        Preconditions.checkState(zkClient == null, "zk client already init");
+
+        buildZkClient();
 
         LOG.info(zkClient.getState().name());
 
-        zkClient.getConnectionStateListenable().addListener(new ConnectionStateListener() {
-            @Override
-            public void stateChanged(CuratorFramework client, ConnectionState newState) {
+        zkClient.getUnhandledErrorListenable().addListener(this);
 
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("reconnect to zookeeper,recover provider and consumer data");
-                }
-                if (newState == ConnectionState.RECONNECTED) {
-//                    recoverRegistryData();
-                }
-            }
-        });
+        zkClient.getConnectionStateListenable().addListener(
+                (client, newState) -> handleStateChange(newState));
+    }
+
+    private void handleStateChange(ConnectionState newState) {
+        switch (newState) {
+            case CONNECTED:
+                LOG.info("Connected to ZooKeeper quorum.");
+                break;
+            case SUSPENDED:
+                LOG.info("Connection to ZooKeeper suspended.");
+                break;
+            case RECONNECTED:
+                LOG.info("Connection to ZooKeeper was reconnected.");
+                //// recoverRegistryData();
+                break;
+            case LOST:
+                // Maybe we have to throw an exception here to terminate
+                LOG.info("Connection to ZooKeeper lost.");
+                break;
+        }
     }
 
     @Override
-    public boolean start() {
+    public void start(RegisterRole registerRole) {
+        this.registerRole = registerRole;
         init();
-        if (zkClient == null) {
-            LOG.warn("Start zookeeper registry must be do init first!");
-            return false;
-        }
+        Preconditions.checkNotNull(zkClient, "Start zookeeper registry must be do init first!");
         if (zkClient.getState() == CuratorFrameworkState.STARTED) {
-            return true;
+            LOG.info("zookeeper client already started");
+            return;
         }
         try {
             zkClient.start();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to start zookeeper zkClient", e);
+            LOG.error(e.getMessage(), e);
+            throw new SystemCoreException("Failed to start zookeeper zkClient", e);
         }
-        return zkClient.getState() == CuratorFrameworkState.STARTED;
+        Preconditions.checkState(zkClient.getState() == CuratorFrameworkState.STARTED,
+                "zookeeper registry not started!");
     }
 
     private String buildServicerPath(String rootPath, ServiceConfig config) {
@@ -110,11 +125,11 @@ public class ZookeeperRegistry extends Register {
     }
 
     @Override
-    public void register(ServiceConfig serviceConfig) {
+    public void register(final ServiceConfig serviceConfig) {
         LOG.info("do register");
         ServerConfig serverConfig = serviceConfig.getServerConfig();
         StringBuilder sb = new StringBuilder();
-        String serverUrl = sb.append(buildServicerPath(rootPath, serviceConfig)).
+        String serverUrl = sb.append(buildServicerPath(registryPropConfig.getRoot(), serviceConfig)).
                 append(CONTEXT_SEP).append(serverConfig.getHost()).append(":")
                 .append(serverConfig.getPort()).toString();
 
@@ -123,21 +138,54 @@ public class ZookeeperRegistry extends Register {
         try {
             getAndCheckZkClient().create().creatingParentContainersIfNeeded()
                     .withMode(ephemeralNode ? CreateMode.EPHEMERAL : CreateMode.PERSISTENT)
-                    .forPath(serverUrl, PROVIDER_ONLINE);
-            serviceConfig.getEventBus().post(new ServiceRegistedEvent(
+                    .forPath(serverUrl, SERVICE_ONLINE);
+
+            SERVICE_CONFIG_SET.add(serviceConfig);
+            serviceConfig.getEventBus().post(new ServiceRegistedEvent(EventAction.ADD,
                     serviceConfig.getInterfaceId(), serviceConfig.getRef()));
+        } catch (KeeperException.NodeExistsException ignored) {
+            SERVICE_CONFIG_SET.add(serviceConfig);
+            serviceConfig.getEventBus().post(new ServiceRegistedEvent(EventAction.ADD,
+                    serviceConfig.getInterfaceId(), serviceConfig.getRef()));
+            LOG.warn("service has exists in zookeeper, service={}", serverUrl);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
+            throw new SystemCoreException(e.getMessage());
         }
     }
 
     @Override
-    public List<String> subscribe(ConsumerConfig config) {
+    public void unRegister(final ServiceConfig serviceConfig) {
+        LOG.info("do unRegister");
+        ServerConfig serverConfig = serviceConfig.getServerConfig();
+        StringBuilder sb = new StringBuilder();
+        String serverUrl = sb.append(buildServicerPath(registryPropConfig.getRoot(), serviceConfig)).
+                append(CONTEXT_SEP).append(serverConfig.getHost()).append(":")
+                .append(serverConfig.getPort()).toString();
+
+        LOG.info(sb.toString());
+
+        try {
+            getAndCheckZkClient().delete().deletingChildrenIfNeeded().forPath(serverUrl);
+            SERVICE_CONFIG_SET.remove(serviceConfig);
+            serviceConfig.getEventBus().post(new ServiceRegistedEvent(EventAction.DEL,
+                    serviceConfig.getInterfaceId(), serviceConfig.getRef()));
+        } catch (KeeperException.NodeExistsException ignored) {
+            LOG.warn("service has exists in zookeeper, service={}", serverUrl);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+            throw new SystemCoreException(e.getMessage());
+        }
+
+    }
+
+    @Override
+    public List<String> subscribe(final ConsumerConfig config) {
         List<String> servers = Lists.newArrayList();
         if (serviceObserver == null) {
             serviceObserver = new ZookeeperServiceObserver();
         }
-        final String servicePath = buildServicerPath(rootPath, config);
+        final String servicePath = buildServicerPath(registryPropConfig.getRoot(), config);
         PathChildrenCache pathChildrenCache = INTERFACE_SERVICE_CACHE.get(config);
         if (pathChildrenCache == null) {
             pathChildrenCache = new PathChildrenCache(zkClient, servicePath, true);
@@ -182,12 +230,11 @@ public class ZookeeperRegistry extends Register {
         }
 
         return servers;
-
     }
 
     private CuratorFramework getAndCheckZkClient() {
         if (zkClient == null || zkClient.getState() != CuratorFrameworkState.STARTED) {
-            throw new RuntimeException("Zookeeper client is not available");
+            throw new SystemCoreException("Zookeeper client is not available");
         }
         return zkClient;
     }
@@ -198,12 +245,20 @@ public class ZookeeperRegistry extends Register {
                 entry.getValue().close();
             } catch (Exception e) {
                 LOG.error("Close PathChildrenCache error!", e);
+                throw new SystemCoreException(e.getMessage());
             }
         }
     }
 
     @Override
     public void destroy() {
+        LOG.info("register do destory");
+        if (!SERVICE_CONFIG_SET.isEmpty()) {
+            SERVICE_CONFIG_SET.forEach((s) -> {
+                unRegister(s);
+            });
+        }
+
         closePathChildrenCache(INTERFACE_SERVICE_CACHE);
         if (zkClient != null && zkClient.getState() == CuratorFrameworkState.STARTED) {
             zkClient.close();
@@ -215,5 +270,10 @@ public class ZookeeperRegistry extends Register {
         hook.preDestroy();
         destroy();
         hook.postDestroy();
+    }
+
+    @Override
+    public void unhandledError(String message, Throwable e) {
+        registerRole.handleError(new SystemCoreException("Unhandled error : " + message, e));
     }
 }

@@ -1,5 +1,6 @@
 package org.miaohong.newfishchatserver.core.rpc.service.config;
 
+import com.google.common.base.Objects;
 import lombok.Getter;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBus;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBusManager;
@@ -64,5 +65,23 @@ public class ServiceConfig<T> {
         return this;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ServiceConfig<?> that = (ServiceConfig<?>) o;
+        return Objects.equal(serverConfig, that.serverConfig) &&
+                Objects.equal(ref, that.ref) &&
+                Objects.equal(interfaceId, that.interfaceId) &&
+                Objects.equal(serviceBootstrap, that.serviceBootstrap);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(serverConfig, ref, interfaceId, serviceBootstrap);
+    }
 }

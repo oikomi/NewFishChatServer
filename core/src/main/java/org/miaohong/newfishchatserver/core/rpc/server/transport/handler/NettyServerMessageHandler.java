@@ -141,7 +141,11 @@ public class NettyServerMessageHandler extends SimpleChannelInboundHandler<RpcRe
             LOG.info("Received event [{}] and will take a action", event);
             if (event instanceof ServiceRegistedEvent) {
                 ServiceRegistedEvent serviceRegistedEvent = (ServiceRegistedEvent) event;
-                SERVICE_MAP.put(serviceRegistedEvent.getInterfaceId(), serviceRegistedEvent.getRef());
+                if (serviceRegistedEvent.getAction().isAddState()) {
+                    SERVICE_MAP.put(serviceRegistedEvent.getInterfaceId(), serviceRegistedEvent.getRef());
+                } else if (serviceRegistedEvent.getAction().isDelState()) {
+                    SERVICE_MAP.remove(serviceRegistedEvent.getInterfaceId());
+                }
             }
         }
     }

@@ -2,17 +2,18 @@ package org.miaohong.newfishchatserver.core.rpc.client;
 
 import com.google.common.base.Preconditions;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.ProxyConstants;
-import org.miaohong.newfishchatserver.core.rpc.registry.Register;
+import org.miaohong.newfishchatserver.core.rpc.registry.AbstractRegister;
+import org.miaohong.newfishchatserver.core.rpc.registry.RegisterRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class ConsumerBootstrap<T> extends AbstractConsumerBootstrap<T> {
+public class ConsumerBootstrap<T> extends AbstractConsumerBootstrap<T> implements RegisterRole {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConsumerBootstrap.class);
 
-    public ConsumerBootstrap(ConsumerConfig<T> consumerConfig, Register register) {
+    public ConsumerBootstrap(ConsumerConfig<T> consumerConfig, AbstractRegister register) {
         super(consumerConfig, register);
     }
 
@@ -28,10 +29,10 @@ public class ConsumerBootstrap<T> extends AbstractConsumerBootstrap<T> {
             return proxyInstance;
         }
 
-        register.start();
+        register.start(this);
         List<String> servers = register.subscribe(consumerConfig);
 
-        LOG.info(String.valueOf(servers));
+        LOG.info("servers : " + String.valueOf(servers));
 
         Preconditions.checkState(checkProxy(), "rpc client proxy must be jdk or bytebuddy");
         Preconditions.checkNotNull(proxyFactory);
@@ -39,4 +40,20 @@ public class ConsumerBootstrap<T> extends AbstractConsumerBootstrap<T> {
 
         return proxyInstance;
     }
+
+    @Override
+    public void handleError(Exception exception) {
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    @Override
+    public void destroy(DestroyHook hook) {
+
+    }
+
 }

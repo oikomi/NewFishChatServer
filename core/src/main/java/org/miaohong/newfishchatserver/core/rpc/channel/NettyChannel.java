@@ -3,6 +3,7 @@ package org.miaohong.newfishchatserver.core.rpc.channel;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
+import org.miaohong.newfishchatserver.core.execption.SystemCoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,6 @@ public class NettyChannel implements
         this.context = context;
         this.channel = context.channel();
     }
-
 
     @Override
     public ChannelHandlerContext channelContext() {
@@ -46,7 +46,7 @@ public class NettyChannel implements
     @Override
     public void writeAndFlush(final Object obj) {
         if (!isAvailable()) {
-            throw new RuntimeException("channel is not alive");
+            throw new SystemCoreException("channel is not alive");
         }
         ChannelFuture channelFuture = channel.writeAndFlush(obj);
         channelFuture.addListener(future -> {

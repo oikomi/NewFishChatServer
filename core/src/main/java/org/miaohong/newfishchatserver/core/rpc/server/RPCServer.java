@@ -8,6 +8,7 @@ import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
 import org.miaohong.newfishchatserver.core.metrics.MetricSystem;
 import org.miaohong.newfishchatserver.core.rpc.server.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.server.transport.NettyServer;
+import org.miaohong.newfishchatserver.core.runtime.RuntimeContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,7 @@ public class RPCServer extends Server {
 
     public RPCServer(ServerConfig serverConfig) {
         try {
+            RuntimeContext.now();
             nettyServer = new NettyServer(serverConfig);
             serverState = ServerState.ALIVE;
         } catch (Exception e) {

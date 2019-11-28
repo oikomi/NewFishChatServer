@@ -10,7 +10,7 @@ public class RegistryPropConfig extends BasePropConfig {
     private RegistryPropConfig() {
     }
 
-    public static RegistryPropConfig getINSTANCE() {
+    public static RegistryPropConfig get() {
         return Inner.INSTANCE;
     }
 
@@ -28,6 +28,18 @@ public class RegistryPropConfig extends BasePropConfig {
 
     public int getTimeout() {
         return getInt("registry.timeout", 1000);
+    }
+
+    public String getRoot() {
+        return getString("registry.root");
+    }
+
+    public int getRetryWait() {
+        return getInt("registry.retry.wait", 3000);
+    }
+
+    public int getMaxRetryAttempts() {
+        return getInt("registry.retry.max.attempts", 3);
     }
 
     @Override
