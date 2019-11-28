@@ -45,7 +45,7 @@ public class ConnectionManager {
     }
 
     public static ConnectionManager getINSTANCE() {
-        return ConnectionManager.Inner.INSTANCE;
+        return Inner.INSTANCE;
     }
 
     public void updateConnectedServer(List<String> allServerAddress) {

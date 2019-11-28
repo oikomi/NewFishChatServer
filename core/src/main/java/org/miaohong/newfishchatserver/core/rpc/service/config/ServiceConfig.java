@@ -1,11 +1,12 @@
-package org.miaohong.newfishchatserver.core.rpc.service;
+package org.miaohong.newfishchatserver.core.rpc.service.config;
 
 import lombok.Getter;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBus;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBusManager;
 import org.miaohong.newfishchatserver.core.rpc.registry.zk.ZookeeperRegistry;
-import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;
+import org.miaohong.newfishchatserver.core.rpc.server.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.server.transport.handler.NettyServerMessageHandler;
+import org.miaohong.newfishchatserver.core.rpc.service.ServiceBootstrap;
 
 
 public class ServiceConfig<T> {

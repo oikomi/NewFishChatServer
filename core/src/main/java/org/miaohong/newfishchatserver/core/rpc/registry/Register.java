@@ -2,7 +2,7 @@ package org.miaohong.newfishchatserver.core.rpc.registry;
 
 import org.miaohong.newfishchatserver.core.rpc.base.Destroyable;
 import org.miaohong.newfishchatserver.core.rpc.client.ConsumerConfig;
-import org.miaohong.newfishchatserver.core.rpc.service.ServiceConfig;
+import org.miaohong.newfishchatserver.core.rpc.service.config.ServiceConfig;
 
 import java.util.List;
 

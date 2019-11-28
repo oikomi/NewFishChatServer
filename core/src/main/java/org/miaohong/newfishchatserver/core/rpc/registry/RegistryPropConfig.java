@@ -11,7 +11,7 @@ public class RegistryPropConfig extends BasePropConfig {
     }
 
     public static RegistryPropConfig getINSTANCE() {
-        return RegistryPropConfig.Inner.INSTANCE;
+        return Inner.INSTANCE;
     }
 
     public String getProtocol() {

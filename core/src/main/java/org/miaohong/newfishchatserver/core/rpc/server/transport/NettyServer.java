@@ -20,7 +20,7 @@ import org.miaohong.newfishchatserver.core.rpc.concurrency.NamedThreadFactory;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBus;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBusManager;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServerStartedEvent;
-import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;
+import org.miaohong.newfishchatserver.core.rpc.server.config.ServerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

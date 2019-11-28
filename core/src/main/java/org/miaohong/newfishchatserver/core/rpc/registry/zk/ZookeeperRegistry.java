@@ -18,8 +18,8 @@ import org.miaohong.newfishchatserver.core.rpc.client.ConsumerConfig;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServiceRegistedEvent;
 import org.miaohong.newfishchatserver.core.rpc.registry.Register;
 import org.miaohong.newfishchatserver.core.rpc.registry.RegistryPropConfig;
-import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;
-import org.miaohong.newfishchatserver.core.rpc.service.ServiceConfig;
+import org.miaohong.newfishchatserver.core.rpc.server.config.ServerConfig;
+import org.miaohong.newfishchatserver.core.rpc.service.config.ServiceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

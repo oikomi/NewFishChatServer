@@ -1,7 +1,7 @@
 package org.miaohong.newfishchatserver.core.rpc.eventbus.event;
 
 import lombok.Getter;
-import org.miaohong.newfishchatserver.core.rpc.server.ServerConfig;
+import org.miaohong.newfishchatserver.core.rpc.server.config.ServerConfig;
 
 public class ServerStartedEvent implements Event {
 

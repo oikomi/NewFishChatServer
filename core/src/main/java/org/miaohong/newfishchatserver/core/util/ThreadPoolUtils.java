@@ -108,7 +108,7 @@ public class ThreadPoolUtils {
                 maximumPoolSize,
                 DateUtils.MILLISECONDS_PER_MINUTE,
                 TimeUnit.MILLISECONDS,
-                new SynchronousQueue<Runnable>());
+                new SynchronousQueue<>());
     }
 
     /**

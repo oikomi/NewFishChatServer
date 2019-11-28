@@ -1,6 +1,8 @@
 package org.miaohong.newfishchatserver.core.rpc.server;
 
 
+import org.miaohong.newfishchatserver.core.rpc.server.config.ServerConfig;
+
 public class ServerFactory {
 
     public static synchronized Server getServer(ServerConfig serverConfig) {

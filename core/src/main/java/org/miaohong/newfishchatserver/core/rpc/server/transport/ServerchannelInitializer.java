@@ -20,10 +20,11 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public class ServerchannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ServerchannelInitializer.class);
-    private NettyServerChannelManagerHandler channelManagerHandler = new NettyServerChannelManagerHandler();
+    private NettyServerChannelManagerHandler channelManagerHandler;
     private NettyServerMessageHandler messageHandler;
 
     public ServerchannelInitializer(CommonNettyPropConfig nettyPropConfig) {
+        this.channelManagerHandler = new NettyServerChannelManagerHandler();
         this.messageHandler = new NettyServerMessageHandler(nettyPropConfig);
     }
 
@@ -37,7 +38,8 @@ public class ServerchannelInitializer extends ChannelInitializer<SocketChannel> 
                 .addLast(RpcDecoder.NAME, new RpcDecoder(RpcRequest.class))
                 .addLast(RpcEncoder.NAME, new RpcEncoder(RpcResponse.class))
                 // FIXME
-                .addLast("server-idle-handler", new IdleStateHandler(0, 0, 1000, MILLISECONDS))
+                .addLast("server-idle-handler",
+                        new IdleStateHandler(0, 0, 1000, MILLISECONDS))
                 .addLast(NettyServerMessageHandler.NAME, messageHandler);
     }
 }

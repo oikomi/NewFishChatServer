@@ -19,7 +19,7 @@ public class ConnectionManage {
     }
 
     public static ConnectionManage getINSTANCE() {
-        return ConnectionManage.Inner.INSTANCE;
+        return Inner.INSTANCE;
     }
 
     public NettyClientHandler chooseHandler() {

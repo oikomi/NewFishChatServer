@@ -1,8 +1,10 @@
 package org.miaohong.newfishchatserver.core.metrics;
 
 import com.codahale.metrics.MetricRegistry;
+import com.google.common.base.Preconditions;
 import org.miaohong.newfishchatserver.core.conf.yaml.YamlConfigManager;
 import org.miaohong.newfishchatserver.core.conf.yaml.model.MetricConfig;
+import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
 import org.miaohong.newfishchatserver.core.metrics.sink.Sink;
 import org.miaohong.newfishchatserver.core.metrics.source.Source;
 import org.miaohong.newfishchatserver.core.util.ClassUtils;
@@ -22,14 +24,22 @@ public class MetricSystem {
 
     private MetricRegistry registry = new MetricRegistry();
 
-    public MetricSystem() {
+    private MetricSystem() {
         this.metricConfig
                 = (MetricConfig) YamlConfigManager.get(METRIC_CONF_PATH, MetricConfig.class);
     }
 
+    public static MetricSystem get() {
+        return Inner.INSTANCE;
+    }
+
+    private void initCheck() {
+        Preconditions.checkNotNull(metricConfig);
+    }
 
     public void start() {
         LOG.info("start metric system");
+        initCheck();
         registerSources();
         registerSinks();
     }
@@ -47,6 +57,7 @@ public class MetricSystem {
             o = ClassUtils.forName(clazz).getConstructor().newInstance();
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
+            throw new ServerCoreException(e.getMessage());
         }
         if (o instanceof Source) {
             Source source = (Source) o;
@@ -67,9 +78,15 @@ public class MetricSystem {
             o = ClassUtils.forName(clazz).getConstructor(MetricRegistry.class).newInstance(registry);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
+            throw new ServerCoreException(e.getMessage());
         }
         if (o instanceof Sink) {
             ((Sink) o).start();
         }
     }
+
+    private static class Inner {
+        private static final MetricSystem INSTANCE = new MetricSystem();
+    }
+
 }

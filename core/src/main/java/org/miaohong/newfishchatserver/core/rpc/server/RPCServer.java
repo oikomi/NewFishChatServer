@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.miaohong.newfishchatserver.core.execption.CoreErrorConstant;
 import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
 import org.miaohong.newfishchatserver.core.metrics.MetricSystem;
+import org.miaohong.newfishchatserver.core.rpc.server.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.server.transport.NettyServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,7 @@ public class RPCServer extends Server {
 
     private NettyServer nettyServer;
 
-    private MetricSystem metricSystem = new MetricSystem();
+    private MetricSystem metricSystem = MetricSystem.get();
 
     @Getter
     private volatile ServerState serverState = ServerState.INIT;
