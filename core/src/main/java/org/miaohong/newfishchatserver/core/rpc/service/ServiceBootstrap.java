@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.eventbus.Subscribe;
 import org.miaohong.newfishchatserver.core.rpc.base.Destroyable;
+import org.miaohong.newfishchatserver.core.rpc.concurrency.NamedThreadFactory;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServerStartedEvent;
 import org.miaohong.newfishchatserver.core.rpc.registry.AbstractRegister;
 import org.miaohong.newfishchatserver.core.rpc.registry.RegisterRole;
@@ -23,7 +24,9 @@ public class ServiceBootstrap<T> implements RegisterRole, Destroyable {
     private static final Logger LOG = LoggerFactory.getLogger(ServiceBootstrap.class);
     private static ReentrantLock lock = new ReentrantLock();
     private static Condition connected = lock.newCondition();
-    private final ExecutorService executorService = ThreadPoolUtils.newFixedThreadPool(1);
+    private final ExecutorService executorService = ThreadPoolUtils.newFixedThreadPool(
+            3, ThreadPoolUtils.buildQueue(3),
+            new NamedThreadFactory("service register"));
     private AbstractRegister register;
     private ServiceConfig<T> serviceConfig;
 

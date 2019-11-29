@@ -1,5 +1,6 @@
 package org.miaohong.newfishchatserver.core.rpc.registry;
 
+import org.apache.zookeeper.CreateMode;
 import org.miaohong.newfishchatserver.core.rpc.base.Destroyable;
 import org.miaohong.newfishchatserver.core.rpc.client.ConsumerConfig;
 import org.miaohong.newfishchatserver.core.rpc.service.config.ServiceConfig;
@@ -24,6 +25,24 @@ public abstract class AbstractRegister implements Destroyable {
     public abstract void unRegister(final ServiceConfig config);
 
     public abstract List<String> subscribe(final ConsumerConfig config);
+
+    protected CreateMode getCreateMode(final ServiceConfig serviceConfig) {
+        CreateMode mode;
+        switch (serviceConfig.getServiceType()) {
+            case DYNAMIC:
+                mode = CreateMode.EPHEMERAL;
+                break;
+            case DYNAMIC_SEQUENTIAL:
+                mode = CreateMode.EPHEMERAL_SEQUENTIAL;
+                break;
+            default:
+                mode = CreateMode.PERSISTENT;
+                break;
+        }
+
+        return mode;
+    }
+
 
     @Override
     public void destroy(DestroyHook hook) {

@@ -101,7 +101,7 @@ public class NettyServerMessageHandler extends SimpleChannelInboundHandler<RpcRe
                 response.setResult(result);
             } catch (Exception e) {
                 response.setError("failed");
-                LOG.error("RPC Server handle request error", e);
+                LOG.error("RPC Server handle request error {}", e.getMessage(), e);
             }
 
             LOG.info("start to send response");

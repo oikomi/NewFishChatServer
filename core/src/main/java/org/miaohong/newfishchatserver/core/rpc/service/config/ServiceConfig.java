@@ -8,6 +8,7 @@ import org.miaohong.newfishchatserver.core.rpc.registry.zk.ZookeeperRegistry;
 import org.miaohong.newfishchatserver.core.rpc.server.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.server.transport.handler.NettyServerMessageHandler;
 import org.miaohong.newfishchatserver.core.rpc.service.ServiceBootstrap;
+import org.miaohong.newfishchatserver.core.rpc.service.ServiceType;
 
 
 public class ServiceConfig<T> {
@@ -17,12 +18,14 @@ public class ServiceConfig<T> {
     private ServerConfig serverConfig;
     private T ref;
     private String interfaceId;
+    @Getter
+    private ServiceType serviceType;
     private ServiceBootstrap serviceBootstrap;
 
     public ServiceConfig() {
         eventBus.register(new NettyServerMessageHandler.RpcServerHandlerListener());
         eventBus.register(new ServiceBootstrap.ServiceBootstrapListener());
-
+        serviceType = ServiceType.DYNAMIC;
     }
 
     public synchronized void export() {

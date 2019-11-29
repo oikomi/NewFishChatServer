@@ -18,7 +18,7 @@ public class ConsoleSink implements Sink {
 
     @Override
     public void start() {
-        reporter.start(10000, TimeUnit.MILLISECONDS);
+        reporter.start(1000000, TimeUnit.MILLISECONDS);
     }
 
     @Override
