@@ -188,14 +188,12 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
                 pathChildrenCache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
+                throw new SystemCoreException(e.getMessage());
             }
             INTERFACE_SERVICE_CACHE.put(config, pathChildrenCache);
         }
 
-        LOG.info(String.valueOf(pathChildrenCache.getCurrentData()));
-
         List<ChildData> childDatas = pathChildrenCache.getCurrentData();
-
         for (ChildData data : childDatas) {
             String server = data.getPath().substring(servicePath.length() + 1);
             servers.add(server);

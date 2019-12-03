@@ -1,6 +1,7 @@
 package org.miaohong.newfishchatserver.core.rpc.client;
 
 
+import org.miaohong.newfishchatserver.core.rpc.network.NetworkConfig;
 import org.miaohong.newfishchatserver.core.rpc.network.client.config.ClientConfig;
 import org.miaohong.newfishchatserver.core.rpc.network.client.transport.NettyClient;
 import org.miaohong.newfishchatserver.core.rpc.registry.zk.ZookeeperRegistry;
@@ -17,18 +18,19 @@ public class RpcClient<T> implements Client {
 
     private static ThreadPoolExecutor threadPoolExecutor = ThreadPoolUtils.newCachedThreadPool(
             16, 16, ThreadPoolUtils.buildQueue(64));
-    private NettyClient nettyClient;
+
+    private NettyClient<T> nettyClient;
 
     private ConsumerConfig<T> consumerConfig;
 
     private ConsumerBootstrap<T> consumerBootstrap;
 
-    private ClientConfig clientConfig = new ClientConfig();
+    private NetworkConfig clientConfig = new ClientConfig();
 
     public RpcClient(ConsumerConfig<T> consumerConfig) {
         this.consumerConfig = consumerConfig;
         this.consumerBootstrap = new ConsumerBootstrap<>(this.consumerConfig, new ZookeeperRegistry());
-        this.nettyClient = new NettyClient(consumerConfig, clientConfig);
+        this.nettyClient = new NettyClient<>(consumerConfig, clientConfig);
     }
 
     public static void submit(Runnable task) {

@@ -25,6 +25,7 @@ public class ServiceCache implements PathChildrenCacheListener, Listenable<Servi
             case CHILD_ADDED:
                 LOG.info("addService");
 
+
 //                            serviceObserver.addService(config, servicePath, event.getData(),
 //                                    finalPathChildrenCache.getCurrentData());
                 break;

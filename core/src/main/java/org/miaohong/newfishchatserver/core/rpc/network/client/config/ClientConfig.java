@@ -1,9 +1,9 @@
 package org.miaohong.newfishchatserver.core.rpc.network.client.config;
 
-import org.miaohong.newfishchatserver.core.rpc.network.NetworkConfig;
+import org.miaohong.newfishchatserver.core.rpc.network.AbstractNetworkConfig;
 import org.miaohong.newfishchatserver.core.util.HardwareUtils;
 
-public class ClientConfig implements NetworkConfig {
+public class ClientConfig extends AbstractNetworkConfig {
 
     @Override
     public String getHost() {

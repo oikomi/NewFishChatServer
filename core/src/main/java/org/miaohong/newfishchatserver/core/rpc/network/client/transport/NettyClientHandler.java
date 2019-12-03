@@ -17,8 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse> implements RpcHandler {
 
+    public static final String NAME = "message client";
     private static final Logger LOG = LoggerFactory.getLogger(NettyClientHandler.class);
-
     private ConcurrentHashMap<String, RPCFuture> pendingRpc = new ConcurrentHashMap<>();
 
     @Getter

@@ -16,10 +16,10 @@ public class ClientChannelInitializer extends ChannelInitializer<SocketChannel> 
     @Override
     protected void initChannel(SocketChannel ch) {
         ch.pipeline().addLast("logging", new LoggingHandler(LogLevel.INFO))
-                .addLast("encoder", new RpcEncoder(RpcRequest.class))
+                .addLast(RpcEncoder.NAME, new RpcEncoder(RpcRequest.class))
                 .addLast(new LengthFieldBasedFrameDecoder(FrameCoderProto.MAX_FRAME_LENGTH, 0,
                         FrameCoderProto.LENGTH_FIELD_LENGTH, 0, 0))
-                .addLast("decoder", new RpcDecoder(RpcResponse.class))
-                .addLast("client handler", new NettyClientHandler());
+                .addLast(RpcDecoder.NAME, new RpcDecoder(RpcResponse.class))
+                .addLast(NettyClientHandler.NAME, new NettyClientHandler());
     }
 }

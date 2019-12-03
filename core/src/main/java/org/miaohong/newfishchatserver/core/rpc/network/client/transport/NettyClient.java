@@ -1,5 +1,6 @@
 package org.miaohong.newfishchatserver.core.rpc.network.client.transport;
 
+import com.google.common.base.Preconditions;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import org.miaohong.newfishchatserver.core.execption.ClientCoreException;
@@ -16,17 +17,17 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 
-public class NettyClient extends AbstractNettyComponet {
+public class NettyClient<T> extends AbstractNettyComponet {
 
     private static final Logger LOG = LoggerFactory.getLogger(NettyClient.class);
 
-    private io.netty.channel.Channel channel = null;
-    private InetSocketAddress localAddress = null;
+    private io.netty.channel.Channel channel;
+    private InetSocketAddress localAddress;
     private volatile ChannelState state = ChannelState.UNINIT;
 
-    private ConsumerConfig consumerConfig;
+    private ConsumerConfig<T> consumerConfig;
 
-    public NettyClient(ConsumerConfig consumerConfig, NetworkConfig config) {
+    public NettyClient(ConsumerConfig<T> consumerConfig, NetworkConfig config) {
         super(config);
         this.consumerConfig = consumerConfig;
     }
@@ -34,7 +35,6 @@ public class NettyClient extends AbstractNettyComponet {
     public boolean isAvailable() {
         return state.isAliveState() && channel != null && channel.isActive();
     }
-
 
     private void open() {
         if (isAvailable()) {
@@ -47,18 +47,19 @@ public class NettyClient extends AbstractNettyComponet {
     }
 
     private void connect(InetSocketAddress remoteAddress) {
+
+        Preconditions.checkState(clientBootstrap != null, "Client has not been initialized yet.");
+
         long start = System.currentTimeMillis();
         ChannelFuture channelFuture = null;
         try {
             channelFuture = clientBootstrap.connect(remoteAddress);
-            channelFuture.addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(final ChannelFuture channelFuture) {
-                    if (channelFuture.isSuccess()) {
-                        LOG.debug("Successfully connect to remote server. remote peer = {}", remoteAddress);
-                        NettyClientHandler handler = channelFuture.channel().pipeline().get(NettyClientHandler.class);
-                        consumerConfig.getEventBus().post(new NettyClientHandlerRegistedEvent(handler));
-                    }
+            channelFuture.addListener((ChannelFutureListener) future -> {
+                if (future.isSuccess()) {
+                    NettyClientHandler handler = future.channel().pipeline().get(NettyClientHandler.class);
+                    consumerConfig.getEventBus().post(new NettyClientHandlerRegistedEvent(handler));
+                    final long duration = System.currentTimeMillis() - start;
+                    LOG.info("Successfully connect to remote server. remote peer = {}, (took {} ms)", remoteAddress, duration);
                 }
             });
 
@@ -71,16 +72,12 @@ public class NettyClient extends AbstractNettyComponet {
                 }
                 state = ChannelState.ALIVE;
             }
-            boolean connected = false;
-            if (channelFuture.channel() != null) {
-                connected = channelFuture.channel().isActive();
-            }
 
         } catch (Exception e) {
             if (channelFuture != null) {
                 channelFuture.channel().close();
             }
-            throw new ClientCoreException("NettyChannel failed to connect to server: ", e);
+            throw new ClientCoreException("Netty client failed to connect to server: ", e);
 
         } finally {
             if (!state.isAliveState()) {
@@ -94,14 +91,27 @@ public class NettyClient extends AbstractNettyComponet {
     }
 
     public synchronized void close() {
+
+        final long start = System.currentTimeMillis();
+
         try {
             state = ChannelState.CLOSE;
 
             if (channel != null) {
                 channel.close();
             }
+
+            if (clientBootstrap != null) {
+                if (clientBootstrap.config().group() != null) {
+                    clientBootstrap.config().group().shutdownGracefully();
+                }
+                clientBootstrap = null;
+            }
+            final long duration = System.currentTimeMillis() - start;
+            LOG.info("Successful shutdown (took {} ms).", duration);
+
         } catch (Exception e) {
-            LOG.error("NettyChannel close Error: " + " local=" + localAddress, e);
+            LOG.error("Netty client close Error: " + " local=" + localAddress, e);
         }
     }
 
