@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.rpc.server.config;
+package org.miaohong.newfishchatserver.core.rpc.network.config;
 
 
 import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
@@ -10,7 +10,8 @@ public class ServerConfig extends AbstractServerConfig {
 
     private Server server;
 
-    public int getServerNumThreads() {
+    @Override
+    public int getThreadsNum() {
         return serverNumThreads;
     }
 
@@ -23,6 +24,7 @@ public class ServerConfig extends AbstractServerConfig {
         return this;
     }
 
+    @Override
     public String getHost() {
         return host;
     }
@@ -32,9 +34,11 @@ public class ServerConfig extends AbstractServerConfig {
         return this;
     }
 
+    @Override
     public int getPort() {
         return port;
     }
+
 
     public ServerConfig setPort(int port) {
         if (!NetUtils.isRandomPort(port) && NetUtils.isInvalidPort(port)) {

@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.rpc.server.transport.handler;
+package org.miaohong.newfishchatserver.core.rpc.network.server.transport.handler;
 
 import com.google.common.base.Preconditions;
 import io.netty.channel.Channel;

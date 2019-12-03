@@ -8,7 +8,7 @@ import org.miaohong.newfishchatserver.annotations.Internal;
 import org.miaohong.newfishchatserver.core.rpc.client.ConnectionManage;
 import org.miaohong.newfishchatserver.core.rpc.client.RPCFuture;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.AbstractInvocationHandler;
-import org.miaohong.newfishchatserver.core.rpc.client.transport.NettyClientHandler;
+import org.miaohong.newfishchatserver.core.rpc.network.client.transport.NettyClientHandler;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

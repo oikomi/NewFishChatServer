@@ -1,17 +1,17 @@
-package org.miaohong.newfishchatserver.core.rpc.server.transport;
+package org.miaohong.newfishchatserver.core.rpc.network.server.transport;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.miaohong.newfishchatserver.core.conf.prop.CommonNettyPropConfig;
+import org.miaohong.newfishchatserver.core.rpc.network.server.transport.handler.NettyServerChannelManagerHandler;
+import org.miaohong.newfishchatserver.core.rpc.network.server.transport.handler.NettyServerMessageHandler;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcDecoder;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcEncoder;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcResponse;
 import org.miaohong.newfishchatserver.core.rpc.proto.framecoder.FrameCoderProto;
-import org.miaohong.newfishchatserver.core.rpc.server.transport.handler.NettyServerChannelManagerHandler;
-import org.miaohong.newfishchatserver.core.rpc.server.transport.handler.NettyServerMessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

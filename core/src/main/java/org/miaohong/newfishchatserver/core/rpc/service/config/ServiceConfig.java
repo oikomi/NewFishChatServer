@@ -4,9 +4,9 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBus;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBusManager;
+import org.miaohong.newfishchatserver.core.rpc.network.config.NetworkConfig;
+import org.miaohong.newfishchatserver.core.rpc.network.server.transport.handler.NettyServerMessageHandler;
 import org.miaohong.newfishchatserver.core.rpc.registry.zk.ZookeeperRegistry;
-import org.miaohong.newfishchatserver.core.rpc.server.config.ServerConfig;
-import org.miaohong.newfishchatserver.core.rpc.server.transport.handler.NettyServerMessageHandler;
 import org.miaohong.newfishchatserver.core.rpc.service.ServiceBootstrap;
 import org.miaohong.newfishchatserver.core.rpc.service.ServiceType;
 
@@ -15,7 +15,7 @@ public class ServiceConfig<T> {
 
     @Getter
     private final EventBus eventBus = EventBusManager.get();
-    private ServerConfig serverConfig;
+    private NetworkConfig serverConfig;
     private T ref;
     private String interfaceId;
     @Getter
@@ -50,11 +50,11 @@ public class ServiceConfig<T> {
         return this;
     }
 
-    public ServerConfig getServerConfig() {
+    public NetworkConfig getServerConfig() {
         return serverConfig;
     }
 
-    public ServiceConfig setServerConfig(ServerConfig serverConfig) {
+    public ServiceConfig setServerConfig(NetworkConfig serverConfig) {
         this.serverConfig = serverConfig;
         return this;
     }

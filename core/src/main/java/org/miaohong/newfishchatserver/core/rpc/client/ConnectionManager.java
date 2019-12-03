@@ -6,7 +6,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.miaohong.newfishchatserver.core.rpc.client.transport.NettyClientHandler;
+import org.miaohong.newfishchatserver.core.rpc.network.client.transport.NettyClientHandler;
 import org.miaohong.newfishchatserver.core.util.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

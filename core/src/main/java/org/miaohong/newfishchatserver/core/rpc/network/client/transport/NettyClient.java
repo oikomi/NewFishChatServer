@@ -1,17 +1,17 @@
-package org.miaohong.newfishchatserver.core.rpc.client.transport;
+package org.miaohong.newfishchatserver.core.rpc.network.client.transport;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import org.miaohong.newfishchatserver.core.conf.prop.CommonNettyPropConfig;
 import org.miaohong.newfishchatserver.core.execption.ClientCoreException;
 import org.miaohong.newfishchatserver.core.rpc.channel.ChannelState;
 import org.miaohong.newfishchatserver.core.rpc.client.ConsumerConfig;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.NettyClientHandlerRegistedEvent;
+import org.miaohong.newfishchatserver.core.rpc.network.AbstractNettyComponet;
+import org.miaohong.newfishchatserver.core.rpc.network.NetworkRole;
+import org.miaohong.newfishchatserver.core.rpc.network.config.NetworkConfig;
 import org.miaohong.newfishchatserver.core.util.HardwareUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,50 +20,57 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 
-public class NettyClient {
+public class NettyClient extends AbstractNettyComponet {
 
     private static final Logger LOG = LoggerFactory.getLogger(NettyClient.class);
+
     private static final NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(
             Math.max(HardwareUtils.getNumberCPUCores() + 1, 32),
             new DefaultThreadFactory("NettyClientWorker", true));
+
+    private static final CommonNettyPropConfig commonNettyPropConfig = CommonNettyPropConfig.get();
 
     private io.netty.channel.Channel channel = null;
     private InetSocketAddress localAddress = null;
     private volatile ChannelState state = ChannelState.UNINIT;
 
-    private Bootstrap bootstrap;
+//    private Bootstrap bootstrap;
 
     private ConsumerConfig consumerConfig;
 
-    public NettyClient(ConsumerConfig consumerConfig) {
+    public NettyClient(ConsumerConfig consumerConfig, NetworkConfig config) {
+        super(config);
         this.consumerConfig = consumerConfig;
     }
-
 
     public boolean isAvailable() {
         return state.isAliveState() && channel != null && channel.isActive();
     }
 
 
-    public void open() {
+    private void open() {
         if (isAvailable()) {
             return;
         }
-        bootstrap = new Bootstrap();
-        bootstrap.group(nioEventLoopGroup)
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .channel(NioSocketChannel.class);
 
-        bootstrap.handler(new ClientChannelInitializer());
+        initBootstrap(NetworkRole.CLIENT);
+//        clientBootstrap.group(nioEventLoopGroup)
+//                .option(ChannelOption.SO_KEEPALIVE, commonNettyPropConfig.getChannelOptionForSOKEEPALIVE())
+//                .option(ChannelOption.TCP_NODELAY, commonNettyPropConfig.getgetChannelOptionForTCPNODELAY())
+//                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+//                .channel(NioSocketChannel.class);
+//
+//        // Timeout for new connections
+//        clientBootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, commonNettyPropConfig.getClientConnectTimeoutSeconds() * 1000);
+
+        clientBootstrap.handler(new ClientChannelInitializer());
     }
 
-    public void connect(InetSocketAddress remoteAddress) {
+    private void connect(InetSocketAddress remoteAddress) {
         long start = System.currentTimeMillis();
         ChannelFuture channelFuture = null;
         try {
-            channelFuture = this.bootstrap.connect(remoteAddress);
+            channelFuture = clientBootstrap.connect(remoteAddress);
             channelFuture.addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(final ChannelFuture channelFuture) {

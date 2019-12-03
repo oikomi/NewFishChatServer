@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.rpc.client.transport;
+package org.miaohong.newfishchatserver.core.rpc.network.client.transport;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;

@@ -1,8 +1,8 @@
 package org.miaohong.newfishchatserver.core.rpc.client;
 
 import com.google.common.eventbus.Subscribe;
-import org.miaohong.newfishchatserver.core.rpc.client.transport.NettyClientHandler;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.NettyClientHandlerRegistedEvent;
+import org.miaohong.newfishchatserver.core.rpc.network.client.transport.NettyClientHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +25,7 @@ public class ConnectionManage {
     public NettyClientHandler chooseHandler() {
         if (connectedHandlers.size() == 0) {
             try {
-                TimeUnit.SECONDS.sleep(2);
+                TimeUnit.SECONDS.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

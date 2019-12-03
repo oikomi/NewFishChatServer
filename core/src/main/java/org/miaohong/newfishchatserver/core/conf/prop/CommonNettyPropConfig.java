@@ -70,6 +70,11 @@ public class CommonNettyPropConfig extends BasePropConfig {
         return getInt("netty.server.memory.pool.arena.num", 24);
     }
 
+
+    public int getClientConnectTimeoutSeconds() {
+        return getInt("netty.client.connectTimeoutSec", 20);
+    }
+
     @Override
     protected String getPropertiesPath() {
         return NETTY_PROP_NAME;

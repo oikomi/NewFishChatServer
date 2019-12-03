@@ -17,12 +17,13 @@ import org.miaohong.newfishchatserver.core.execption.SystemCoreException;
 import org.miaohong.newfishchatserver.core.rpc.client.ConsumerConfig;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.EventAction;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServiceRegistedEvent;
+import org.miaohong.newfishchatserver.core.rpc.network.config.NetworkConfig;
+import org.miaohong.newfishchatserver.core.rpc.network.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.registry.AbstractRegister;
 import org.miaohong.newfishchatserver.core.rpc.registry.RegisterRole;
 import org.miaohong.newfishchatserver.core.rpc.registry.RegistryPropConfig;
 import org.miaohong.newfishchatserver.core.rpc.registry.serializer.JsonInstanceSerializer;
 import org.miaohong.newfishchatserver.core.rpc.registry.serializer.ServiceInstance;
-import org.miaohong.newfishchatserver.core.rpc.server.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.service.config.ServiceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
     private static final ConcurrentMap<ConsumerConfig, PathChildrenCache>
             INTERFACE_SERVICE_CACHE = Maps.newConcurrentMap();
 
-    private static List<ServiceConfig> SERVICE_CONFIG_SET = Lists.newArrayList();
+    private static final List<ServiceConfig> SERVICE_CONFIG_LIST = Lists.newArrayList();
     private CuratorFramework zkClient;
 
     private JsonInstanceSerializer<ServerConfig> serializer = new JsonInstanceSerializer<>(ServerConfig.class);
@@ -66,8 +67,6 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
         Preconditions.checkState(zkClient == null, "zk client already init");
 
         buildZkClient();
-
-        LOG.info(zkClient.getState().name());
 
         zkClient.getUnhandledErrorListenable().addListener(this);
 
@@ -125,26 +124,24 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
     @Override
     public void register(final ServiceConfig serviceConfig) {
         LOG.info("do register");
-        ServerConfig serverConfig = serviceConfig.getServerConfig();
+        NetworkConfig serverConfig = serviceConfig.getServerConfig();
         StringBuilder sb = new StringBuilder();
         String serverUrl = sb.append(buildServicePath(registryPropConfig.getRoot(), serviceConfig)).
                 append(CONTEXT_SEP).append(serverConfig.getHost()).append(":")
                 .append(serverConfig.getPort()).toString();
 
-        LOG.info(sb.toString());
-
         try {
             getAndCheckZkClient().create().creatingParentsIfNeeded()
                     .withMode(getCreateMode(serviceConfig))
                     .forPath(serverUrl, serializer.serialize(ServiceInstance.<ServerConfig>builder(serviceConfig).
-                            payload(serviceConfig.getServerConfig()).build()));
+                            payload((ServerConfig) serviceConfig.getServerConfig()).build()));
 
-            SERVICE_CONFIG_SET.add(serviceConfig);
+            SERVICE_CONFIG_LIST.add(serviceConfig);
             LOG.info("start send event");
             serviceConfig.getEventBus().post(new ServiceRegistedEvent(EventAction.ADD,
                     serviceConfig.getInterfaceId(), serviceConfig.getRef()));
         } catch (KeeperException.NodeExistsException ignored) {
-            SERVICE_CONFIG_SET.add(serviceConfig);
+            SERVICE_CONFIG_LIST.add(serviceConfig);
             serviceConfig.getEventBus().post(new ServiceRegistedEvent(EventAction.ADD,
                     serviceConfig.getInterfaceId(), serviceConfig.getRef()));
             LOG.warn("service has exists in zookeeper, service={}", serverUrl);
@@ -157,7 +154,7 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
     @Override
     public void unRegister(final ServiceConfig serviceConfig) {
         LOG.info("do unRegister");
-        ServerConfig serverConfig = serviceConfig.getServerConfig();
+        NetworkConfig serverConfig = serviceConfig.getServerConfig();
         StringBuilder sb = new StringBuilder();
         String serverUrl = sb.append(buildServicePath(registryPropConfig.getRoot(), serviceConfig)).
                 append(CONTEXT_SEP).append(serverConfig.getHost()).append(":")
@@ -167,7 +164,7 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
 
         try {
             getAndCheckZkClient().delete().deletingChildrenIfNeeded().forPath(serverUrl);
-            SERVICE_CONFIG_SET.remove(serviceConfig);
+            SERVICE_CONFIG_LIST.remove(serviceConfig);
             serviceConfig.getEventBus().post(new ServiceRegistedEvent(EventAction.DEL,
                     serviceConfig.getInterfaceId(), serviceConfig.getRef()));
         } catch (KeeperException.NodeExistsException ignored) {
@@ -228,8 +225,8 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
     @Override
     public void destroy() {
         LOG.info("register do destory");
-        if (!SERVICE_CONFIG_SET.isEmpty()) {
-            SERVICE_CONFIG_SET.forEach(this::unRegister);
+        if (!SERVICE_CONFIG_LIST.isEmpty()) {
+            SERVICE_CONFIG_LIST.forEach(this::unRegister);
         }
 
         closePathChildrenCache(INTERFACE_SERVICE_CACHE);

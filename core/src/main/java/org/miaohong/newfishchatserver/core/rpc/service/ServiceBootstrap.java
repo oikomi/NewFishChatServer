@@ -6,9 +6,9 @@ import com.google.common.eventbus.Subscribe;
 import org.miaohong.newfishchatserver.core.rpc.base.Destroyable;
 import org.miaohong.newfishchatserver.core.rpc.concurrency.NamedThreadFactory;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServerStartedEvent;
+import org.miaohong.newfishchatserver.core.rpc.network.config.NetworkConfig;
 import org.miaohong.newfishchatserver.core.rpc.registry.AbstractRegister;
 import org.miaohong.newfishchatserver.core.rpc.registry.RegisterRole;
-import org.miaohong.newfishchatserver.core.rpc.server.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.service.config.ServiceConfig;
 import org.miaohong.newfishchatserver.core.runtime.RuntimeContext;
 import org.miaohong.newfishchatserver.core.util.ThreadPoolUtils;
@@ -119,7 +119,7 @@ public class ServiceBootstrap<T> implements RegisterRole, Destroyable {
 
     public static class ServiceBootstrapListener {
 
-        private static ServerConfig serverConfig;
+        private static NetworkConfig serverConfig;
 
         @Subscribe
         public static void doAction(final Object event) {

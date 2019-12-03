@@ -1,7 +1,7 @@
 package org.miaohong.newfishchatserver.core.rpc.eventbus.event;
 
 import lombok.Data;
-import org.miaohong.newfishchatserver.core.rpc.client.transport.NettyClientHandler;
+import org.miaohong.newfishchatserver.core.rpc.network.client.transport.NettyClientHandler;
 
 @Data
 public class NettyClientHandlerRegistedEvent implements Event {

@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.rpc.server.transport;
+package org.miaohong.newfishchatserver.core.rpc.network;
 
 import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
