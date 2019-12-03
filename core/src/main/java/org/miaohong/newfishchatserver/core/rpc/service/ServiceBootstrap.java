@@ -6,7 +6,7 @@ import com.google.common.eventbus.Subscribe;
 import org.miaohong.newfishchatserver.core.rpc.base.Destroyable;
 import org.miaohong.newfishchatserver.core.rpc.concurrency.NamedThreadFactory;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServerStartedEvent;
-import org.miaohong.newfishchatserver.core.rpc.network.config.NetworkConfig;
+import org.miaohong.newfishchatserver.core.rpc.network.NetworkConfig;
 import org.miaohong.newfishchatserver.core.rpc.registry.AbstractRegister;
 import org.miaohong.newfishchatserver.core.rpc.registry.RegisterRole;
 import org.miaohong.newfishchatserver.core.rpc.service.config.ServiceConfig;

@@ -10,7 +10,7 @@ import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBusManager;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServerStartedEvent;
 import org.miaohong.newfishchatserver.core.rpc.network.AbstractNettyComponet;
 import org.miaohong.newfishchatserver.core.rpc.network.NetworkRole;
-import org.miaohong.newfishchatserver.core.rpc.network.config.ServerConfig;
+import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,4 +82,15 @@ public class NettyServer extends AbstractNettyComponet {
         LOG.info("Successful shutdown (took {} ms).", duration);
     }
 
+    @Override
+    public void destroy() {
+        shutdown();
+    }
+
+    @Override
+    public void destroy(DestroyHook hook) {
+        hook.preDestroy();
+        destroy();
+        hook.postDestroy();
+    }
 }

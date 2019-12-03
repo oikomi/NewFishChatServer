@@ -1,5 +1,6 @@
-package org.miaohong.newfishchatserver.core.rpc.network.config;
+package org.miaohong.newfishchatserver.core.rpc.network.server.config;
 
+import org.miaohong.newfishchatserver.core.rpc.network.NetworkConfig;
 import org.miaohong.newfishchatserver.core.util.HardwareUtils;
 
 public abstract class AbstractServerConfig implements NetworkConfig {

@@ -6,7 +6,7 @@ import lombok.Getter;
 import org.miaohong.newfishchatserver.core.execption.CoreErrorConstant;
 import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
 import org.miaohong.newfishchatserver.core.metrics.MetricSystem;
-import org.miaohong.newfishchatserver.core.rpc.network.config.ServerConfig;
+import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.network.server.transport.NettyServer;
 import org.miaohong.newfishchatserver.core.runtime.RuntimeContext;
 import org.slf4j.Logger;

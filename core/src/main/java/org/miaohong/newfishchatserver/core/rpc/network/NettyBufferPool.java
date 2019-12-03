@@ -13,43 +13,13 @@ import java.lang.reflect.Field;
 public class NettyBufferPool extends PooledByteBufAllocator {
 
     private static final Logger LOG = LoggerFactory.getLogger(NettyBufferPool.class);
-    /**
-     * We strictly prefer direct buffers and disallow heap allocations.
-     */
     private static final boolean PREFER_DIRECT = true;
-    /**
-     * Arenas allocate chunks of pageSize << maxOrder bytes. With these defaults, this results in
-     * chunks of 16 MB.
-     *
-     * @see #MAX_ORDER
-     */
     private static final int PAGE_SIZE = 8192;
-    /**
-     * Arenas allocate chunks of pageSize << maxOrder bytes. With these defaults, this results in
-     * chunks of 16 MB.
-     *
-     * @see #PAGE_SIZE
-     */
     private static final int MAX_ORDER = 11;
-    /**
-     * <tt>PoolArena&lt;ByteBuffer&gt;[]</tt> via Reflection.
-     */
     private final Object[] directArenas;
-    /**
-     * Configured number of arenas.
-     */
     private final int numberOfArenas;
-    /**
-     * Configured chunk size for the arenas.
-     */
     private final int chunkSize;
 
-    /**
-     * Creates Netty's buffer pool with the specified number of direct arenas.
-     *
-     * @param numberOfArenas Number of arenas (recommended: 2 * number of task
-     *                       slots)
-     */
     public NettyBufferPool(int numberOfArenas) {
         super(
                 PREFER_DIRECT,
@@ -87,44 +57,14 @@ public class NettyBufferPool extends PooledByteBufAllocator {
         }
     }
 
-    /**
-     * Returns the number of arenas.
-     *
-     * @return Number of arenas.
-     */
     int getNumberOfArenas() {
         return numberOfArenas;
     }
 
-    /**
-     * Returns the chunk size.
-     *
-     * @return Chunk size.
-     */
     int getChunkSize() {
         return chunkSize;
     }
 
-    // ------------------------------------------------------------------------
-    // Direct pool arena stats via Reflection. This is not safe when upgrading
-    // Netty versions, but we are currently bound to the version we have (see
-    // commit d92e422). In newer Netty versions these statistics are exposed.
-    // ------------------------------------------------------------------------
-
-    /**
-     * Returns the number of currently allocated bytes.
-     *
-     * <p>The stats are gathered via Reflection and are mostly relevant for
-     * debugging purposes.
-     *
-     * @return Number of currently allocated bytes.
-     * @throws NoSuchFieldException   Error getting the statistics (should not
-     *                                happen when the Netty version stays the
-     *                                same).
-     * @throws IllegalAccessException Error getting the statistics (should not
-     *                                happen when the Netty version stays the
-     *                                same).
-     */
     public Option<Long> getNumberOfAllocatedBytes()
             throws NoSuchFieldException, IllegalAccessException {
 
@@ -146,19 +86,6 @@ public class NettyBufferPool extends PooledByteBufAllocator {
         }
     }
 
-    /**
-     * Returns the number of allocated bytes of the given arena and chunk list.
-     *
-     * @param arena              Arena to gather statistics about.
-     * @param chunkListFieldName Chunk list to check.
-     * @return Number of total allocated bytes by this arena.
-     * @throws NoSuchFieldException   Error getting the statistics (should not
-     *                                happen when the Netty version stays the
-     *                                same).
-     * @throws IllegalAccessException Error getting the statistics (should not
-     *                                happen when the Netty version stays the
-     *                                same).
-     */
     private long getNumberOfAllocatedChunks(Object arena, String chunkListFieldName)
             throws NoSuchFieldException, IllegalAccessException {
 

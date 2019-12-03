@@ -1,7 +1,7 @@
 package org.miaohong.newfishchatserver.core.rpc.server;
 
 
-import org.miaohong.newfishchatserver.core.rpc.network.config.ServerConfig;
+import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfig;
 
 public class ServerFactory {
 

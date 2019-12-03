@@ -1,8 +1,8 @@
 package org.miaohong.newfishchatserver.core.rpc.client;
 
 
+import org.miaohong.newfishchatserver.core.rpc.network.client.config.ClientConfig;
 import org.miaohong.newfishchatserver.core.rpc.network.client.transport.NettyClient;
-import org.miaohong.newfishchatserver.core.rpc.network.config.ClientConfig;
 import org.miaohong.newfishchatserver.core.rpc.registry.zk.ZookeeperRegistry;
 import org.miaohong.newfishchatserver.core.util.ThreadPoolUtils;
 import org.slf4j.Logger;

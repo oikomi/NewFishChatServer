@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.rpc.network.config;
+package org.miaohong.newfishchatserver.core.rpc.network;
 
 public interface NetworkConfig {
 
