@@ -45,7 +45,7 @@ public class ConnectionManager {
     }
 
     public static ConnectionManager getINSTANCE() {
-        return Inner.INSTANCE;
+        return SingletonHolder.INSTANCE;
     }
 
     public void updateConnectedServer(List<String> allServerAddress) {
@@ -184,7 +184,7 @@ public class ConnectionManager {
         eventLoopGroup.shutdownGracefully();
     }
 
-    private static class Inner {
+    private static class SingletonHolder {
         private static final ConnectionManager INSTANCE = new ConnectionManager();
     }
 

@@ -19,7 +19,7 @@ public class ConnectionManage {
     }
 
     public static ConnectionManage getINSTANCE() {
-        return Inner.INSTANCE;
+        return SingletonHolder.INSTANCE;
     }
 
     public NettyClientHandler chooseHandler() {
@@ -33,7 +33,7 @@ public class ConnectionManage {
         return connectedHandlers.get(0);
     }
 
-    private static class Inner {
+    private static class SingletonHolder {
         private static final ConnectionManage INSTANCE = new ConnectionManage();
     }
 

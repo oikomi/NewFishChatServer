@@ -9,7 +9,7 @@ public class CommonNettyPropConfig extends BasePropConfig {
     }
 
     public static CommonNettyPropConfig get() {
-        return Inner.INSTANCE;
+        return SingletonHolder.INSTANCE;
     }
 
     public TransportType getTransportType() {
@@ -65,6 +65,11 @@ public class CommonNettyPropConfig extends BasePropConfig {
         return getInt("netty.server.pool.alive", 0);
     }
 
+
+    public int getNumberOfArenas() {
+        return getInt("netty.server.memory.pool.arena.num", 24);
+    }
+
     @Override
     protected String getPropertiesPath() {
         return NETTY_PROP_NAME;
@@ -74,7 +79,7 @@ public class CommonNettyPropConfig extends BasePropConfig {
         NIO, EPOLL, AUTO
     }
 
-    private static class Inner {
+    private static class SingletonHolder {
         private static final CommonNettyPropConfig INSTANCE = new CommonNettyPropConfig();
     }
 }

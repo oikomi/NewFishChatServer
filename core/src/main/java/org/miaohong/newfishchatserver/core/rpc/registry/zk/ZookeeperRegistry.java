@@ -10,8 +10,6 @@ import org.apache.curator.framework.api.UnhandledErrorListener;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
-import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
-import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.KeeperException;
@@ -188,28 +186,7 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
         PathChildrenCache pathChildrenCache = INTERFACE_SERVICE_CACHE.get(config);
         if (pathChildrenCache == null) {
             pathChildrenCache = new PathChildrenCache(zkClient, servicePath, true);
-            pathChildrenCache.getListenable().addListener(new PathChildrenCacheListener() {
-                @Override
-                public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
-                    switch (event.getType()) {
-                        case CHILD_ADDED:
-                            LOG.info("addService");
-//                            serviceObserver.addService(config, servicePath, event.getData(),
-//                                    finalPathChildrenCache.getCurrentData());
-                            break;
-                        case CHILD_REMOVED:
-//                            serviceObserver.removeService(config, servicePath, event.getData(),
-//                                    finalPathChildrenCache.getCurrentData());
-                            break;
-                        case CHILD_UPDATED:
-//                            serviceObserver.updateService(config, servicePath, event.getData(),
-//                                    finalPathChildrenCache.getCurrentData());
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            });
+            pathChildrenCache.getListenable().addListener(new ServiceCache());
             try {
                 pathChildrenCache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
             } catch (Exception e) {

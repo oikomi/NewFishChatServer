@@ -8,7 +8,7 @@ public class RpcClientConfig extends BasePropConfig {
     }
 
     public static RpcClientConfig get() {
-        return Inner.INSTANCE;
+        return SingletonHolder.INSTANCE;
     }
 
     @Override
@@ -20,7 +20,7 @@ public class RpcClientConfig extends BasePropConfig {
         return getString("rpc.client.proxy");
     }
 
-    private static class Inner {
+    private static class SingletonHolder {
         private static final RpcClientConfig INSTANCE = new RpcClientConfig();
     }
 

@@ -11,7 +11,7 @@ public class RegistryPropConfig extends BasePropConfig {
     }
 
     public static RegistryPropConfig get() {
-        return Inner.INSTANCE;
+        return SingletonHolder.INSTANCE;
     }
 
     public String getProtocol() {
@@ -47,7 +47,7 @@ public class RegistryPropConfig extends BasePropConfig {
         return REGISTRY_PROP_NAME;
     }
 
-    private static class Inner {
+    private static class SingletonHolder {
         private static final RegistryPropConfig INSTANCE = new RegistryPropConfig();
     }
 

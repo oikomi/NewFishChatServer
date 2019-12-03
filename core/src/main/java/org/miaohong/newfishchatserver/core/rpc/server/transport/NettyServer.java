@@ -41,10 +41,13 @@ public class NettyServer {
     private ServerBootstrap bootstrap;
     private ChannelFuture bindFuture;
     private ServerConfig serverConfig;
+    private NettyBufferPool bufferPool;
+
 
     public NettyServer(ServerConfig serverConfig) {
         this.serverConfig = serverConfig;
         this.serverName = serverConfig.getServerName();
+        this.bufferPool = new NettyBufferPool(commonNettyPropConfig.getNumberOfArenas());
     }
 
     private static ThreadFactory getNamedThreadFactory(String name) {
@@ -135,6 +138,11 @@ public class NettyServer {
                 .childOption(ChannelOption.SO_KEEPALIVE, commonNettyPropConfig.getChannelOptionForSOKEEPALIVE())
                 .childOption(ChannelOption.TCP_NODELAY, commonNettyPropConfig.getgetChannelOptionForTCPNODELAY())
                 .childHandler(new ServerchannelInitializer(commonNettyPropConfig));
+
+        // Pooled allocators for Netty's ByteBuf instances
+        bootstrap.option(ChannelOption.ALLOCATOR, bufferPool);
+        bootstrap.childOption(ChannelOption.ALLOCATOR, bufferPool);
+
     }
 
     public void start() {

@@ -30,7 +30,7 @@ public class MetricSystem {
     }
 
     public static MetricSystem get() {
-        return Inner.INSTANCE;
+        return SingletonHolder.INSTANCE;
     }
 
     private void initCheck() {
@@ -85,7 +85,7 @@ public class MetricSystem {
         }
     }
 
-    private static class Inner {
+    private static class SingletonHolder {
         private static final MetricSystem INSTANCE = new MetricSystem();
     }
 
