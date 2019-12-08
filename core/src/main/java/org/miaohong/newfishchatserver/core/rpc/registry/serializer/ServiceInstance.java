@@ -1,34 +1,56 @@
 package org.miaohong.newfishchatserver.core.rpc.registry.serializer;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.miaohong.newfishchatserver.core.rpc.service.config.ServiceConfig;
 
-@Data
 public class ServiceInstance<T> {
 
+    @Getter
+    @Setter
     private String interfaceId;
+
+    @Getter
+    @Setter
     private String host;
+
+    @Getter
+    @Setter
     private int port;
-    private long registrationTimeUTC;
+
+    @Getter
+    @Setter
+    private long registrationTimeUtc;
+
+    @Getter
+    @Setter
     private T payload;
+
+    @Getter
+    @Setter
     private boolean isAlive;
 
-    public ServiceInstance(String interfaceId, String host, int port, T payload, long registrationTimeUTC, boolean isAlive) {
+    private ServiceInstance() {
+
+    }
+
+    public ServiceInstance(String interfaceId, String host, int port, T payload, long registrationTimeUtc, boolean isAlive) {
         this.interfaceId = interfaceId;
         this.host = host;
         this.port = port;
         this.payload = payload;
-        this.registrationTimeUTC = registrationTimeUTC;
+        this.registrationTimeUtc = registrationTimeUtc;
         this.isAlive = isAlive;
 
     }
 
-    public static <T> ServiceInstanceBuilder<T> builder(ServiceConfig serviceConfig) throws Exception {
+    public static <T> ServiceInstanceBuilder<T> builder(ServiceConfig serviceConfig) {
 
         return new ServiceInstanceBuilder<T>()
                 .host(serviceConfig.getServerConfig().getHost())
                 .port(serviceConfig.getServerConfig().getPort())
                 .interfaceId(serviceConfig.getInterfaceId())
+                .payload((T) serviceConfig.getServerConfig())
                 .registrationTimeUTC(System.currentTimeMillis());
     }
 

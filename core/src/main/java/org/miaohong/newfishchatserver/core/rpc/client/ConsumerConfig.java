@@ -3,6 +3,7 @@ package org.miaohong.newfishchatserver.core.rpc.client;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.miaohong.newfishchatserver.core.execption.ClientCoreException;
+import org.miaohong.newfishchatserver.core.lb.strategy.AbstractServiceStrategy;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.ProxyConstants;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBus;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBusManager;
@@ -23,7 +24,7 @@ public class ConsumerConfig<T> {
     private String interfaceId;
 
     public ConsumerConfig() {
-        eventBus.register(new ConnectionManage.RpcClientHandlerListener());
+        eventBus.register(new AbstractServiceStrategy.RpcClientHandlerListener());
     }
 
     @SuppressWarnings("unchecked")

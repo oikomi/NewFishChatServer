@@ -1,7 +1,7 @@
 package org.miaohong.newfishchatserver.gateway.server;
 
 import org.miaohong.newfishchatserver.core.conf.prop.PropConfig;
-import org.miaohong.newfishchatserver.core.rpc.network.config.ServerConfig;
+import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.service.config.ServiceConfig;
 import org.miaohong.newfishchatserver.core.runtime.JvmShutdownSafeguard;
 import org.miaohong.newfishchatserver.core.runtime.SignalHandler;

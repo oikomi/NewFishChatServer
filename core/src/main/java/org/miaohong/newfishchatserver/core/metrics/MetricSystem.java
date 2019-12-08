@@ -8,9 +8,9 @@ import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
 import org.miaohong.newfishchatserver.core.metrics.sink.Sink;
 import org.miaohong.newfishchatserver.core.metrics.source.Source;
 import org.miaohong.newfishchatserver.core.util.ClassUtils;
-import org.miaohong.newfishchatserver.core.util.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -46,7 +46,7 @@ public class MetricSystem {
 
     private void registerSources() {
         List<String> sources = metricConfig.getSources();
-        if (CommonUtils.isNotEmpty(sources)) {
+        if (!CollectionUtils.isEmpty(sources)) {
             sources.forEach(this::registerSource);
         }
     }
@@ -67,7 +67,7 @@ public class MetricSystem {
 
     private void registerSinks() {
         List<String> sinks = metricConfig.getSinks();
-        if (CommonUtils.isNotEmpty(sinks)) {
+        if (!CollectionUtils.isEmpty(sinks)) {
             sinks.forEach(this::registerSink);
         }
     }

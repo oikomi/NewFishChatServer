@@ -25,6 +25,7 @@
         <lombok.version>1.18.10</lombok.version>
         <fastjson.version>1.2.62</fastjson.version>
         <guava.version>28.1-jre</guava.version>
+        <commons-lang3.version>3.9</commons-lang3.version>
         <protobuf.version>3.9.1</protobuf.version>
         <junit.version>4.12</junit.version>
     </properties>
@@ -60,6 +61,13 @@
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.projectlombok</groupId>

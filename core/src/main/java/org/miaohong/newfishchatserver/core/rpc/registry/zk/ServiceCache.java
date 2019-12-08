@@ -6,7 +6,9 @@ import org.apache.curator.framework.listen.StandardListenerManager;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
+import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.registry.listener.ServiceCacheListener;
+import org.miaohong.newfishchatserver.core.rpc.registry.serializer.JsonInstanceSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,24 +20,26 @@ public class ServiceCache implements PathChildrenCacheListener, Listenable<Servi
 
     private StandardListenerManager<ServiceCacheListener> listenerManager = StandardListenerManager.standard();
 
+    private String path;
+    private JsonInstanceSerializer<ServerConfig> serializer;
+
+    public ServiceCache(String path, JsonInstanceSerializer<ServerConfig> serializer) {
+        this.path = path;
+        this.serializer = serializer;
+    }
+
     @Override
     public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
-
         switch (event.getType()) {
             case CHILD_ADDED:
                 LOG.info("addService");
-
-
-//                            serviceObserver.addService(config, servicePath, event.getData(),
-//                                    finalPathChildrenCache.getCurrentData());
+                notifyListeners(event.getData(), true);
                 break;
             case CHILD_REMOVED:
-//                            serviceObserver.removeService(config, servicePath, event.getData(),
-//                                    finalPathChildrenCache.getCurrentData());
+                notifyListeners(event.getData(), false);
                 break;
             case CHILD_UPDATED:
-//                            serviceObserver.updateService(config, servicePath, event.getData(),
-//                                    finalPathChildrenCache.getCurrentData());
+                notifyListeners(event.getData(), false);
                 break;
             default:
                 break;
@@ -58,9 +62,10 @@ public class ServiceCache implements PathChildrenCacheListener, Listenable<Servi
         listenerManager.removeListener(listener);
     }
 
-    private void notifyListeners(ChildData data) {
+    private void notifyListeners(ChildData data, boolean add) {
         listenerManager.forEach((l) -> {
-            l.onChange(data);
+
+            l.onChange(data, path, add, serializer);
         });
     }
 

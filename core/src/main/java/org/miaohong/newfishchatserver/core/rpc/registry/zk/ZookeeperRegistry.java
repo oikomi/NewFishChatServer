@@ -22,6 +22,7 @@ import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfi
 import org.miaohong.newfishchatserver.core.rpc.registry.AbstractRegister;
 import org.miaohong.newfishchatserver.core.rpc.registry.RegisterRole;
 import org.miaohong.newfishchatserver.core.rpc.registry.RegistryPropConfig;
+import org.miaohong.newfishchatserver.core.rpc.registry.listener.ServiceCacheListenerImpl;
 import org.miaohong.newfishchatserver.core.rpc.registry.serializer.JsonInstanceSerializer;
 import org.miaohong.newfishchatserver.core.rpc.registry.serializer.ServiceInstance;
 import org.miaohong.newfishchatserver.core.rpc.service.config.ServiceConfig;
@@ -43,7 +44,8 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
     private static final List<ServiceConfig> SERVICE_CONFIG_LIST = Lists.newArrayList();
     private CuratorFramework zkClient;
 
-    private JsonInstanceSerializer<ServerConfig> serializer = new JsonInstanceSerializer<>(ServerConfig.class);
+    private JsonInstanceSerializer<ServerConfig> serializer =
+            new JsonInstanceSerializer<>(ServerConfig.class);
 
     public ZookeeperRegistry() {
         super(RegistryPropConfig.get());
@@ -133,8 +135,8 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
         try {
             getAndCheckZkClient().create().creatingParentsIfNeeded()
                     .withMode(getCreateMode(serviceConfig))
-                    .forPath(serverUrl, serializer.serialize(ServiceInstance.<ServerConfig>builder(serviceConfig).
-                            payload((ServerConfig) serviceConfig.getServerConfig()).build()));
+                    .forPath(serverUrl, serializer.serialize(
+                            ServiceInstance.<ServerConfig>builder(serviceConfig).build()));
 
             SERVICE_CONFIG_LIST.add(serviceConfig);
             LOG.info("start send event");
@@ -183,7 +185,9 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
         PathChildrenCache pathChildrenCache = INTERFACE_SERVICE_CACHE.get(config);
         if (pathChildrenCache == null) {
             pathChildrenCache = new PathChildrenCache(zkClient, servicePath, true);
-            pathChildrenCache.getListenable().addListener(new ServiceCache());
+            ServiceCache serviceCache = new ServiceCache(servicePath, serializer);
+            serviceCache.addListener(ServiceCacheListenerImpl.get());
+            pathChildrenCache.getListenable().addListener(serviceCache);
             try {
                 pathChildrenCache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
             } catch (Exception e) {

@@ -5,14 +5,19 @@ import org.miaohong.newfishchatserver.core.util.HardwareUtils;
 
 public class ClientConfig extends AbstractNetworkConfig {
 
+    public ClientConfig(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }
+
     @Override
     public String getHost() {
-        return null;
+        return host;
     }
 
     @Override
     public int getPort() {
-        return 0;
+        return port;
     }
 
     @Override

@@ -1,13 +1,12 @@
 package org.miaohong.newfishchatserver.core.rpc.client.proxy.jdk;
 
 import org.miaohong.newfishchatserver.annotations.Internal;
-import org.miaohong.newfishchatserver.core.rpc.client.ConnectionManage;
-import org.miaohong.newfishchatserver.core.rpc.client.ConnectionManager;
+import org.miaohong.newfishchatserver.core.lb.strategy.ServiceStrategy;
 import org.miaohong.newfishchatserver.core.rpc.client.RPCFuture;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.AbstractInvocationHandler;
-import org.miaohong.newfishchatserver.core.rpc.client.proxy.IAsyncObjectProxy;
 import org.miaohong.newfishchatserver.core.rpc.network.client.transport.NettyClientHandler;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
+import org.miaohong.newfishchatserver.core.rpc.registry.serializer.ServiceInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,14 +15,19 @@ import java.lang.reflect.Method;
 import java.util.UUID;
 
 @Internal
-public class JDKInvocationHandler<T> extends AbstractInvocationHandler implements InvocationHandler, IAsyncObjectProxy {
+public class JDKInvocationHandler<T> extends AbstractInvocationHandler implements InvocationHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(JDKInvocationHandler.class);
     private Class<T> clazz;
 
-    public JDKInvocationHandler(Class<T> clazz) {
+    private ServiceStrategy serviceStrategy;
+
+    public JDKInvocationHandler(Class<T> clazz, ServiceStrategy serviceStrategy) {
         this.clazz = clazz;
+        this.serviceStrategy = serviceStrategy;
+
     }
+
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -49,7 +53,13 @@ public class JDKInvocationHandler<T> extends AbstractInvocationHandler implement
 
         LOG.info("send rpc");
 
-        NettyClientHandler handler = ConnectionManage.getINSTANCE().chooseHandler();
+        Thread.sleep(2000);
+
+        ServiceInstance serviceInstance = serviceStrategy.getInstance();
+
+        LOG.info("serviceInstance : {}", serviceInstance);
+        NettyClientHandler handler = serviceStrategy.getNettyClientHandler(
+                serviceInstance.getHost() + ":" + serviceInstance.getPort());
 
         LOG.info("choose handler");
 
@@ -58,12 +68,12 @@ public class JDKInvocationHandler<T> extends AbstractInvocationHandler implement
         return rpcFuture.get();
     }
 
-    @Override
-    public RPCFuture call(String funcName, Object... args) {
-        NettyClientHandler handler = ConnectionManager.getINSTANCE().chooseHandler();
-        RpcRequest request = createRequest(this.clazz.getName(), funcName, args);
-        return handler.sendRequest(request);
-    }
+//    @Override
+//    public RPCFuture call(String funcName, Object... args) {
+//        NettyClientHandler handler = ConnectionManager.getINSTANCE().chooseHandler();
+//        RpcRequest request = createRequest(this.clazz.getName(), funcName, args);
+//        return handler.sendRequest(request);
+//    }
 
     private RpcRequest createRequest(String className, String methodName, Object[] args) {
         RpcRequest request = new RpcRequest();

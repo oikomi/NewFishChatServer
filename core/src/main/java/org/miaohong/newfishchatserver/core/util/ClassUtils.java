@@ -1,5 +1,7 @@
 package org.miaohong.newfishchatserver.core.util;
 
+import org.springframework.util.CollectionUtils;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -102,14 +104,6 @@ public final class ClassUtils {
         return all;
     }
 
-    /**
-     * 实例化一个对象(只检测默认构造函数，其它不管）
-     *
-     * @param clazz 对象类
-     * @param <T>   对象具体类
-     * @return 对象实例
-     * @throws SofaRpcRuntimeException 没有找到方法，或者无法处理，或者初始化方法异常等
-     */
     public static <T> T newInstance(Class<T> clazz) throws RuntimeException {
         if (clazz.isPrimitive()) {
             return (T) getDefaultPrimitiveValue(clazz);
@@ -175,7 +169,7 @@ public final class ClassUtils {
      */
     public static <T> T newInstanceWithArgs(Class<T> clazz, Class<?>[] argTypes, Object[] args)
             throws RuntimeException {
-        if (CommonUtils.isEmpty(argTypes)) {
+        if (CollectionUtils.isEmpty(Arrays.asList(argTypes))) {
             return newInstance(clazz);
         }
         try {

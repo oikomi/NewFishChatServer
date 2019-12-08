@@ -6,9 +6,12 @@ import org.miaohong.newfishchatserver.core.rpc.network.client.transport.NettyCli
 @Data
 public class NettyClientHandlerRegistedEvent implements Event {
 
+    private String serverAddr;
+
     private NettyClientHandler nettyClientHandler;
 
-    public NettyClientHandlerRegistedEvent(NettyClientHandler nettyClientHandler) {
+    public NettyClientHandlerRegistedEvent(String serverAddr, NettyClientHandler nettyClientHandler) {
+        this.serverAddr = serverAddr;
         this.nettyClientHandler = nettyClientHandler;
     }
 }

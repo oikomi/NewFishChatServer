@@ -5,7 +5,8 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import org.miaohong.newfishchatserver.core.execption.ClientCoreException;
 import org.miaohong.newfishchatserver.core.rpc.channel.ChannelState;
-import org.miaohong.newfishchatserver.core.rpc.client.ConsumerConfig;
+import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBus;
+import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBusManager;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.NettyClientHandlerRegistedEvent;
 import org.miaohong.newfishchatserver.core.rpc.network.AbstractNettyComponet;
 import org.miaohong.newfishchatserver.core.rpc.network.NetworkConfig;
@@ -17,19 +18,19 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 
-public class NettyClient<T> extends AbstractNettyComponet {
+public class NettyClient extends AbstractNettyComponet implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(NettyClient.class);
-
+    private final EventBus eventBus = EventBusManager.get();
     private io.netty.channel.Channel channel;
     private InetSocketAddress localAddress;
     private volatile ChannelState state = ChannelState.UNINIT;
 
-    private ConsumerConfig<T> consumerConfig;
+    private InetSocketAddress remoteAddress;
 
-    public NettyClient(ConsumerConfig<T> consumerConfig, NetworkConfig config) {
+    public NettyClient(NetworkConfig config) {
         super(config);
-        this.consumerConfig = consumerConfig;
+        this.remoteAddress = new InetSocketAddress(config.getHost(), config.getPort());
     }
 
     public boolean isAvailable() {
@@ -57,7 +58,8 @@ public class NettyClient<T> extends AbstractNettyComponet {
             channelFuture.addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
                     NettyClientHandler handler = future.channel().pipeline().get(NettyClientHandler.class);
-                    consumerConfig.getEventBus().post(new NettyClientHandlerRegistedEvent(handler));
+                    eventBus.post(new NettyClientHandlerRegistedEvent(
+                            config.getHost() + ":" + config.getPort(), handler));
                     final long duration = System.currentTimeMillis() - start;
                     LOG.info("Successfully connect to remote server. remote peer = {}, (took {} ms)", remoteAddress, duration);
                 }
@@ -81,11 +83,12 @@ public class NettyClient<T> extends AbstractNettyComponet {
 
         } finally {
             if (!state.isAliveState()) {
+
             }
         }
     }
 
-    public void start(InetSocketAddress remoteAddress) {
+    public void start() {
         open();
         connect(remoteAddress);
     }
@@ -125,5 +128,10 @@ public class NettyClient<T> extends AbstractNettyComponet {
         hook.preDestroy();
         destroy();
         hook.postDestroy();
+    }
+
+    @Override
+    public void run() {
+        start();
     }
 }

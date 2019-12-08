@@ -5,11 +5,13 @@ import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.This;
 import org.miaohong.newfishchatserver.annotations.Internal;
-import org.miaohong.newfishchatserver.core.rpc.client.ConnectionManage;
+import org.miaohong.newfishchatserver.core.lb.strategy.ServiceStrategy;
 import org.miaohong.newfishchatserver.core.rpc.client.RPCFuture;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.AbstractInvocationHandler;
 import org.miaohong.newfishchatserver.core.rpc.network.client.transport.NettyClientHandler;
+import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
+import org.miaohong.newfishchatserver.core.rpc.registry.serializer.ServiceInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +22,12 @@ import java.util.concurrent.ExecutionException;
 public class BytebuddyInvocationHandler extends AbstractInvocationHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(BytebuddyInvocationHandler.class);
+
+    private ServiceStrategy<ServerConfig> serviceStrategy;
+
+    public BytebuddyInvocationHandler(ServiceStrategy serviceStrategy) {
+        this.serviceStrategy = serviceStrategy;
+    }
 
     @RuntimeType
     public Object byteBuddyInvoke(@This Object proxy, @Origin Method method, @AllArguments @RuntimeType Object[] args)
@@ -47,7 +55,13 @@ public class BytebuddyInvocationHandler extends AbstractInvocationHandler {
 
         LOG.info("start choose handler");
 
-        NettyClientHandler handler = ConnectionManage.getINSTANCE().chooseHandler();
+        Thread.sleep(4000);
+
+        ServiceInstance<ServerConfig> serviceInstance = serviceStrategy.getInstance();
+
+        LOG.info("serviceInstance : {}", serviceInstance);
+        NettyClientHandler handler = serviceStrategy.getNettyClientHandler(
+                serviceInstance.getHost() + ":" + serviceInstance.getPort());
 
         LOG.info("choose handler {}", handler);
 

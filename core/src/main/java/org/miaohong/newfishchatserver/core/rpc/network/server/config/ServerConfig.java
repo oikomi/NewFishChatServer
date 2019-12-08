@@ -1,6 +1,7 @@
 package org.miaohong.newfishchatserver.core.rpc.network.server.config;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.miaohong.newfishchatserver.core.execption.ServerCoreException;
 import org.miaohong.newfishchatserver.core.rpc.network.AbstractNetworkConfig;
 import org.miaohong.newfishchatserver.core.rpc.server.Server;
@@ -9,6 +10,7 @@ import org.miaohong.newfishchatserver.core.util.NetUtils;
 
 public class ServerConfig extends AbstractNetworkConfig {
 
+    @JsonIgnore
     private Server server;
 
     @Override
