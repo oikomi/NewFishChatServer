@@ -13,7 +13,7 @@ import java.util.Random;
 
 
 @SpiMeta(name = StrategyConstants.STRATEGY_RANDOM)
-public class RandomStrategy<T> extends AbstractServiceStrategy<T> implements ServiceStrategy<T> {
+public class RandomStrategy extends AbstractServiceStrategy implements ServiceStrategy {
 
     private static final Logger LOG = LoggerFactory.getLogger(RandomStrategy.class);
 
@@ -24,8 +24,8 @@ public class RandomStrategy<T> extends AbstractServiceStrategy<T> implements Ser
     }
 
     @Override
-    public ServiceInstance<T> getInstance() {
-        List<ServiceInstance<T>> instances = instanceProvider.getInstances();
+    public ServiceInstance getInstance() {
+        List<ServiceInstance> instances = instanceProvider.getInstances();
         if (CollectionUtils.isEmpty(instances)) {
             return null;
         }
@@ -38,6 +38,5 @@ public class RandomStrategy<T> extends AbstractServiceStrategy<T> implements Ser
         LOG.info("nettyClientHandlers : {}", nettyClientHandlers);
         return nettyClientHandlers.get(serverAddr);
     }
-
 
 }

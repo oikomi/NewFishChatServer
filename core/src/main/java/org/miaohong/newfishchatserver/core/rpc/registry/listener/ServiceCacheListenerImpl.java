@@ -7,7 +7,6 @@ import org.miaohong.newfishchatserver.core.lb.strategy.InstanceProvider;
 import org.miaohong.newfishchatserver.core.rpc.client.NettyClientFactory;
 import org.miaohong.newfishchatserver.core.rpc.concurrency.NamedThreadFactory;
 import org.miaohong.newfishchatserver.core.rpc.network.client.config.ClientConfig;
-import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.registry.serializer.InstanceSerializer;
 import org.miaohong.newfishchatserver.core.rpc.registry.serializer.ServiceInstance;
 import org.miaohong.newfishchatserver.core.util.ThreadPoolUtils;
@@ -66,13 +65,13 @@ public class ServiceCacheListenerImpl implements ServiceCacheListener, InstanceP
     }
 
     @Override
-    public void onChange(ChildData data, String path, boolean add, InstanceSerializer<ServerConfig> serializer) {
+    public void onChange(ChildData data, String path, boolean add, InstanceSerializer serializer) {
         String server = data.getPath().substring(path.length() + 1);
         LOG.info("instances : {}", instances);
         if (add) {
             try {
                 LOG.info(new String(data.getData()));
-                ServiceInstance<ServerConfig> serviceInstance = serializer.deserialize(data.getData());
+                ServiceInstance serviceInstance = serializer.deserialize(data.getData());
                 instances.put(server, serviceInstance);
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);

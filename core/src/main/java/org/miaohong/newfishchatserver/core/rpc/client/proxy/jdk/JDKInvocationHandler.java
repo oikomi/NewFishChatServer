@@ -12,20 +12,16 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.UUID;
 
 @Internal
 public class JDKInvocationHandler<T> extends AbstractInvocationHandler implements InvocationHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(JDKInvocationHandler.class);
-    private Class<T> clazz;
 
     private ServiceStrategy serviceStrategy;
 
-    public JDKInvocationHandler(Class<T> clazz, ServiceStrategy serviceStrategy) {
-        this.clazz = clazz;
+    public JDKInvocationHandler(ServiceStrategy serviceStrategy) {
         this.serviceStrategy = serviceStrategy;
-
     }
 
 
@@ -48,9 +44,6 @@ public class JDKInvocationHandler<T> extends AbstractInvocationHandler implement
         }
 
         RpcRequest request = buildRequest(method, args);
-        LOG.debug(method.getDeclaringClass().getName());
-        LOG.debug(method.getName());
-
         LOG.info("send rpc");
 
         Thread.sleep(2000);
@@ -59,80 +52,13 @@ public class JDKInvocationHandler<T> extends AbstractInvocationHandler implement
 
         LOG.info("serviceInstance : {}", serviceInstance);
         NettyClientHandler handler = serviceStrategy.getNettyClientHandler(
-                serviceInstance.getHost() + ":" + serviceInstance.getPort());
+                serviceInstance.getServerAddr());
 
         LOG.info("choose handler");
 
         RPCFuture rpcFuture = handler.sendRequest(request);
 
         return rpcFuture.get();
-    }
-
-//    @Override
-//    public RPCFuture call(String funcName, Object... args) {
-//        NettyClientHandler handler = ConnectionManager.getINSTANCE().chooseHandler();
-//        RpcRequest request = createRequest(this.clazz.getName(), funcName, args);
-//        return handler.sendRequest(request);
-//    }
-
-    private RpcRequest createRequest(String className, String methodName, Object[] args) {
-        RpcRequest request = new RpcRequest();
-        request.setRequestId(UUID.randomUUID().toString());
-        request.setInterfaceId(className);
-        request.setMethodName(methodName);
-        request.setParameters(args);
-
-        Class[] parameterTypes = new Class[args.length];
-        // Get the right class type
-        for (int i = 0; i < args.length; i++) {
-            parameterTypes[i] = getClassType(args[i]);
-        }
-        request.setParameterTypes(parameterTypes);
-//        Method[] methods = clazz.getDeclaredMethods();
-//        for (int i = 0; i < methods.length; ++i) {
-//            // Bug: if there are 2 methods have the same name
-//            if (methods[i].getName().equals(methodName)) {
-//                parameterTypes = methods[i].getParameterTypes();
-//                request.setParameterTypes(parameterTypes); // get parameter types
-//                break;
-//            }
-//        }
-
-        LOG.debug(className);
-        LOG.debug(methodName);
-        for (int i = 0; i < parameterTypes.length; ++i) {
-            LOG.debug(parameterTypes[i].getName());
-        }
-        for (int i = 0; i < args.length; ++i) {
-            LOG.debug(args[i].toString());
-        }
-
-        return request;
-    }
-
-    private Class<?> getClassType(Object obj) {
-        Class<?> classType = obj.getClass();
-        String typeName = classType.getName();
-        switch (typeName) {
-            case "java.lang.Integer":
-                return Integer.TYPE;
-            case "java.lang.Long":
-                return Long.TYPE;
-            case "java.lang.Float":
-                return Float.TYPE;
-            case "java.lang.Double":
-                return Double.TYPE;
-            case "java.lang.Character":
-                return Character.TYPE;
-            case "java.lang.Boolean":
-                return Boolean.TYPE;
-            case "java.lang.Short":
-                return Short.TYPE;
-            case "java.lang.Byte":
-                return Byte.TYPE;
-        }
-
-        return classType;
     }
 
 }

@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ConcurrentMap;
 
-public abstract class AbstractServiceStrategy<T> implements ServiceStrategy<T> {
+public abstract class AbstractServiceStrategy implements ServiceStrategy {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractServiceStrategy.class);
 

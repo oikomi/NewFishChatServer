@@ -1,41 +1,43 @@
 package org.miaohong.newfishchatserver.core.rpc.registry.serializer;
 
-public class ServiceInstanceBuilder<T> {
+import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfig;
+
+public class ServiceInstanceBuilder {
 
     private String interfaceId;
     private String host;
     private int port;
     private long registrationTimeUTC;
-    private T payload;
+    private ServerConfig serverConfig;
     private boolean isAlive;
 
-    public ServiceInstanceBuilder<T> host(String host) {
+    public ServiceInstanceBuilder host(String host) {
         this.host = host;
         return this;
     }
 
-    public ServiceInstanceBuilder<T> interfaceId(String interfaceId) {
+    public ServiceInstanceBuilder interfaceId(String interfaceId) {
         this.interfaceId = interfaceId;
         return this;
     }
 
-    public ServiceInstanceBuilder<T> port(int port) {
+    public ServiceInstanceBuilder port(int port) {
         this.port = port;
         return this;
     }
 
-    public ServiceInstanceBuilder<T> registrationTimeUTC(long registrationTimeUTC) {
+    public ServiceInstanceBuilder registrationTimeUTC(long registrationTimeUTC) {
         this.registrationTimeUTC = registrationTimeUTC;
         return this;
     }
 
-    public ServiceInstanceBuilder<T> payload(T payload) {
-        this.payload = payload;
+    public ServiceInstanceBuilder serverConfig(ServerConfig serverConfig) {
+        this.serverConfig = serverConfig;
         return this;
     }
 
-    public ServiceInstance<T> build() {
-        return new ServiceInstance<>(interfaceId, host, port, payload, registrationTimeUTC, isAlive);
+    public ServiceInstance build() {
+        return new ServiceInstance(interfaceId, host, port, serverConfig, registrationTimeUTC, isAlive);
     }
 
 }

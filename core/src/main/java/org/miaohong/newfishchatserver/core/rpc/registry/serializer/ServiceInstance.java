@@ -2,9 +2,10 @@ package org.miaohong.newfishchatserver.core.rpc.registry.serializer;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.service.config.ServiceConfig;
 
-public class ServiceInstance<T> {
+public class ServiceInstance {
 
     @Getter
     @Setter
@@ -24,7 +25,7 @@ public class ServiceInstance<T> {
 
     @Getter
     @Setter
-    private T payload;
+    private ServerConfig serverConfig;
 
     @Getter
     @Setter
@@ -34,24 +35,28 @@ public class ServiceInstance<T> {
 
     }
 
-    public ServiceInstance(String interfaceId, String host, int port, T payload, long registrationTimeUtc, boolean isAlive) {
+    public ServiceInstance(String interfaceId, String host, int port, ServerConfig serverConfig, long registrationTimeUtc, boolean isAlive) {
         this.interfaceId = interfaceId;
         this.host = host;
         this.port = port;
-        this.payload = payload;
+        this.serverConfig = serverConfig;
         this.registrationTimeUtc = registrationTimeUtc;
         this.isAlive = isAlive;
 
     }
 
-    public static <T> ServiceInstanceBuilder<T> builder(ServiceConfig serviceConfig) {
+    public static ServiceInstanceBuilder builder(ServiceConfig serviceConfig) {
 
-        return new ServiceInstanceBuilder<T>()
+        return new ServiceInstanceBuilder()
                 .host(serviceConfig.getServerConfig().getHost())
                 .port(serviceConfig.getServerConfig().getPort())
                 .interfaceId(serviceConfig.getInterfaceId())
-                .payload((T) serviceConfig.getServerConfig())
+                .serverConfig((ServerConfig) serviceConfig.getServerConfig())
                 .registrationTimeUTC(System.currentTimeMillis());
+    }
+
+    public String getServerAddr() {
+        return host + ":" + port;
     }
 
 }

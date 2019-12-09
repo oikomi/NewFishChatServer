@@ -5,11 +5,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JsonInstanceSerializer<T> implements InstanceSerializer<T> {
+public class JsonInstanceSerializer<T> implements InstanceSerializer {
 
     private static final Logger LOG = LoggerFactory.getLogger(JsonInstanceSerializer.class);
 
@@ -26,20 +25,20 @@ public class JsonInstanceSerializer<T> implements InstanceSerializer<T> {
         this.payloadClass = payloadClass;
         mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, failOnUnknownProperties);
-        type = mapper.getTypeFactory().constructType(new TypeReference<ServiceInstance<ServerConfig>>() {
+        type = mapper.getTypeFactory().constructType(new TypeReference<ServiceInstance>() {
         });
     }
 
     @SuppressWarnings({"unchecked"})
     @Override
-    public ServiceInstance<T> deserialize(byte[] bytes) throws Exception {
-        ServiceInstance<T> rawServiceInstance = mapper.readValue(bytes, type);
-        payloadClass.cast(rawServiceInstance.getPayload());
+    public ServiceInstance deserialize(byte[] bytes) throws Exception {
+        ServiceInstance rawServiceInstance = mapper.readValue(bytes, type);
+        payloadClass.cast(rawServiceInstance.getServerConfig());
         return rawServiceInstance;
     }
 
     @Override
-    public byte[] serialize(ServiceInstance<T> instance) throws Exception {
+    public byte[] serialize(ServiceInstance instance) throws Exception {
         return mapper.writeValueAsBytes(instance);
     }
 

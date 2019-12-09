@@ -1,7 +1,7 @@
 package org.miaohong.newfishchatserver.core.rpc.registry.serializer;
 
-public interface InstanceSerializer<T> {
-    byte[] serialize(ServiceInstance<T> instance) throws Exception;
+public interface InstanceSerializer {
+    byte[] serialize(ServiceInstance instance) throws Exception;
 
-    ServiceInstance<T> deserialize(byte[] bytes) throws Exception;
+    ServiceInstance deserialize(byte[] bytes) throws Exception;
 }

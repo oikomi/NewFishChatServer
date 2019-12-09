@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface InstanceProvider<T> {
 
-    List<ServiceInstance<T>> getInstances();
+    List<ServiceInstance> getInstances();
 }

@@ -33,7 +33,7 @@ public class ConsumerBootstrap<T> extends AbstractConsumerBootstrap<T> {
 
         Preconditions.checkState(checkProxy(), "rpc client proxy must be jdk or bytebuddy");
         Preconditions.checkNotNull(proxyFactory);
-        proxyInstance = (T) proxyFactory.getProxy(consumerConfig.getProxyClass(), serviceStrategy);
+        proxyInstance = proxyFactory.getProxy(consumerConfig.getProxyClass(), serviceStrategy);
 
         return proxyInstance;
     }
@@ -52,7 +52,13 @@ public class ConsumerBootstrap<T> extends AbstractConsumerBootstrap<T> {
 
     @Override
     public void destroy(DestroyHook hook) {
-
+        if (hook != null) {
+            hook.preDestroy();
+        }
+        destroy();
+        if (hook != null) {
+            hook.postDestroy();
+        }
     }
 
 }

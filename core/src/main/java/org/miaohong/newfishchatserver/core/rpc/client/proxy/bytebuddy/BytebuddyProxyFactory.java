@@ -5,6 +5,7 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.matcher.ElementMatchers;
 import org.miaohong.newfishchatserver.annotations.SpiMeta;
+import org.miaohong.newfishchatserver.core.execption.ClientCoreException;
 import org.miaohong.newfishchatserver.core.lb.strategy.ServiceStrategy;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.ProxyConstants;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.ProxyFactory;
@@ -20,7 +21,6 @@ public class BytebuddyProxyFactory implements ProxyFactory {
     private static final Logger LOG = LoggerFactory.getLogger(BytebuddyProxyFactory.class);
 
     private static final Map<Class, Class> PROXY_CLASS_MAP = new ConcurrentHashMap<>();
-
 
     @Override
     @SuppressWarnings("unchecked")
@@ -42,7 +42,7 @@ public class BytebuddyProxyFactory implements ProxyFactory {
             return cls.newInstance();
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
-            throw new RuntimeException("construct proxy with bytebuddy occurs error", e);
+            throw new ClientCoreException("construct proxy with bytebuddy occurs error", e);
         }
     }
 }
