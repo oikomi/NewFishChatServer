@@ -1,7 +1,6 @@
 package org.miaohong.newfishchatserver.core.rpc.client;
 
 
-import org.miaohong.newfishchatserver.core.rpc.registry.zk.ZookeeperRegistry;
 import org.miaohong.newfishchatserver.core.util.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,19 +14,10 @@ public class RpcClient<T> implements Client {
     private static ThreadPoolExecutor threadPoolExecutor = ThreadPoolUtils.newCachedThreadPool(
             16, 16, ThreadPoolUtils.buildQueue(64));
 
-//    private NettyClient nettyClient;
-
-    private ConsumerConfig<T> consumerConfig;
-
     private ConsumerBootstrap<T> consumerBootstrap;
 
-//    private NetworkConfig clientConfig = new ClientConfig();
-
     public RpcClient(ConsumerConfig<T> consumerConfig) {
-        this.consumerConfig = consumerConfig;
-        this.consumerBootstrap = new ConsumerBootstrap<>(this.consumerConfig,
-                new ZookeeperRegistry());
-//        this.nettyClient = new NettyClient(clientConfig);
+        this.consumerBootstrap = new ConsumerBootstrap<>(consumerConfig);
     }
 
     public static void submit(Runnable task) {
@@ -39,19 +29,34 @@ public class RpcClient<T> implements Client {
         return consumerBootstrap.refer();
     }
 
-    public void stop() {
-        threadPoolExecutor.shutdown();
-    }
-
     @Override
     public void start() {
-//        nettyClient.start(new InetSocketAddress("127.0.0.1", 15000));
+        // NOTHING
     }
 
     @Override
     public void shutDown() {
-        stop();
+        threadPoolExecutor.shutdown();
+        if (consumerBootstrap != null) {
+            consumerBootstrap.destroy();
+        }
     }
 
+    @Override
+    public void destroy() {
+        shutDown();
+    }
+
+    @Override
+    public void destroy(DestroyHook hook) {
+        if (hook != null) {
+            hook.preDestroy();
+        }
+        destroy();
+        if (hook != null) {
+            hook.postDestroy();
+        }
+
+    }
 }
 

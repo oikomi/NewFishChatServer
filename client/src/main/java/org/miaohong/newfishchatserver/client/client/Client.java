@@ -7,8 +7,6 @@ import org.miaohong.newfishchatserver.proto.gateway.Person;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.TimeUnit;
-
 public class Client {
 
     private static final Logger LOG = LoggerFactory.getLogger(Client.class);
@@ -21,12 +19,7 @@ public class Client {
         consumerConfig.setInterfaceId(GatewayProto.class.getName());
         RpcClient<GatewayProto> rpcClient = new RpcClient<>(consumerConfig);
         rpcClient.start();
-        try {
-            TimeUnit.SECONDS.sleep(1);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-//        ConnectionManager.getINSTANCE().updateConnectedServer(Collections.singletonList("127.0.0.1:15000"));
+
         for (int i = 0; i < 1; i++) {
             LOG.info("i = {}", i);
             GatewayProto s = rpcClient.refer();

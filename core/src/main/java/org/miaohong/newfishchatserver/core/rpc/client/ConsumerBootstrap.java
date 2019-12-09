@@ -1,26 +1,23 @@
 package org.miaohong.newfishchatserver.core.rpc.client;
 
 import com.google.common.base.Preconditions;
-import org.miaohong.newfishchatserver.core.lb.strategy.RandomStrategy;
+import org.miaohong.newfishchatserver.core.extension.ExtensionLoader;
 import org.miaohong.newfishchatserver.core.lb.strategy.ServiceStrategy;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.ProxyConstants;
-import org.miaohong.newfishchatserver.core.rpc.registry.AbstractRegister;
-import org.miaohong.newfishchatserver.core.rpc.registry.RegisterRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class ConsumerBootstrap<T> extends AbstractConsumerBootstrap<T> implements RegisterRole {
+public class ConsumerBootstrap<T> extends AbstractConsumerBootstrap<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConsumerBootstrap.class);
 
-    private ServiceStrategy serviceStrategy = new RandomStrategy();
+    private ServiceStrategy serviceStrategy = ExtensionLoader.getExtensionLoader(ServiceStrategy.class).
+            getExtension(ServiceStrategy.class, this.consumerConfig.getStrategy());
 
-    public ConsumerBootstrap(ConsumerConfig<T> consumerConfig, AbstractRegister register) {
-        super(consumerConfig, register);
-
-        register.start(this);
-        register.subscribe(consumerConfig);
+    public ConsumerBootstrap(ConsumerConfig<T> consumerConfig) {
+        super(consumerConfig);
+        startRegister();
     }
 
     private boolean checkProxy() {
@@ -30,7 +27,6 @@ public class ConsumerBootstrap<T> extends AbstractConsumerBootstrap<T> implement
 
     public T refer() {
         Preconditions.checkNotNull(register);
-
         if (proxyInstance != null) {
             return proxyInstance;
         }
@@ -43,13 +39,15 @@ public class ConsumerBootstrap<T> extends AbstractConsumerBootstrap<T> implement
     }
 
     @Override
-    public void handleError(Exception exception) {
-
+    public void handleError(Exception e) {
+        LOG.error(e.getMessage(), e);
     }
 
     @Override
     public void destroy() {
-
+        if (register != null) {
+            register.unSubscribe();
+        }
     }
 
     @Override

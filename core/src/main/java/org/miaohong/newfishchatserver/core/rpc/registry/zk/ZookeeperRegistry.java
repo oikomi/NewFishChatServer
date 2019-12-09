@@ -13,6 +13,7 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.KeeperException;
+import org.miaohong.newfishchatserver.annotations.SpiMeta;
 import org.miaohong.newfishchatserver.core.execption.SystemCoreException;
 import org.miaohong.newfishchatserver.core.rpc.client.ConsumerConfig;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.EventAction;
@@ -20,6 +21,7 @@ import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServiceRegistedEve
 import org.miaohong.newfishchatserver.core.rpc.network.NetworkConfig;
 import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfig;
 import org.miaohong.newfishchatserver.core.rpc.registry.AbstractRegister;
+import org.miaohong.newfishchatserver.core.rpc.registry.RegisterConstants;
 import org.miaohong.newfishchatserver.core.rpc.registry.RegisterRole;
 import org.miaohong.newfishchatserver.core.rpc.registry.RegistryPropConfig;
 import org.miaohong.newfishchatserver.core.rpc.registry.listener.ServiceCacheListenerImpl;
@@ -29,11 +31,13 @@ import org.miaohong.newfishchatserver.core.rpc.service.config.ServiceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 
+@SpiMeta(name = RegisterConstants.REGISTER_ZOOKEEPER)
 public class ZookeeperRegistry extends AbstractRegister implements UnhandledErrorListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(ZookeeperRegistry.class);
@@ -69,9 +73,7 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
         Preconditions.checkState(zkClient == null, "zk client already init");
 
         buildZkClient();
-
         zkClient.getUnhandledErrorListenable().addListener(this);
-
         zkClient.getConnectionStateListenable().addListener(
                 (client, newState) -> handleConnectionStateChange(newState));
     }
@@ -162,8 +164,6 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
                 append(CONTEXT_SEP).append(serverConfig.getHost()).append(":")
                 .append(serverConfig.getPort()).toString();
 
-        LOG.info(sb.toString());
-
         try {
             getAndCheckZkClient().delete().deletingChildrenIfNeeded().forPath(serverUrl);
             SERVICE_CONFIG_LIST.remove(serviceConfig);
@@ -204,6 +204,17 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
         }
 
         return servers;
+    }
+
+    @Override
+    public void unSubscribe() {
+        INTERFACE_SERVICE_CACHE.forEach((k, v) -> {
+            try {
+                v.close();
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+            }
+        });
     }
 
     private CuratorFramework getAndCheckZkClient() {

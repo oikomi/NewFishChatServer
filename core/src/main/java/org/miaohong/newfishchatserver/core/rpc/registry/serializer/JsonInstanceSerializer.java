@@ -34,8 +34,6 @@ public class JsonInstanceSerializer<T> implements InstanceSerializer<T> {
     @Override
     public ServiceInstance<T> deserialize(byte[] bytes) throws Exception {
         ServiceInstance<T> rawServiceInstance = mapper.readValue(bytes, type);
-        LOG.info(new String(bytes));
-        LOG.info(rawServiceInstance.getPayload().getClass().getName());
         payloadClass.cast(rawServiceInstance.getPayload());
         return rawServiceInstance;
     }

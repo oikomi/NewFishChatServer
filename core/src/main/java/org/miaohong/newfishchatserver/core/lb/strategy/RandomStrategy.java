@@ -1,6 +1,7 @@
 package org.miaohong.newfishchatserver.core.lb.strategy;
 
 
+import org.miaohong.newfishchatserver.annotations.SpiMeta;
 import org.miaohong.newfishchatserver.core.rpc.network.client.transport.NettyClientHandler;
 import org.miaohong.newfishchatserver.core.rpc.registry.serializer.ServiceInstance;
 import org.slf4j.Logger;
@@ -10,6 +11,8 @@ import org.springframework.util.CollectionUtils;
 import java.util.List;
 import java.util.Random;
 
+
+@SpiMeta(name = StrategyConstants.STRATEGY_RANDOM)
 public class RandomStrategy<T> extends AbstractServiceStrategy<T> implements ServiceStrategy<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RandomStrategy.class);
