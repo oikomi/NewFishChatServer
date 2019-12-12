@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.rpc.registry.serializer;
+package org.miaohong.newfishchatserver.core.rpc.register.serializer;
 
 import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfig;
 

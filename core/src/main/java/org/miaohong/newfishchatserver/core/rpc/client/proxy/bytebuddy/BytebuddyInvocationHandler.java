@@ -5,12 +5,14 @@ import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.This;
 import org.miaohong.newfishchatserver.annotations.Internal;
+import org.miaohong.newfishchatserver.core.execption.ClientCoreException;
+import org.miaohong.newfishchatserver.core.execption.CoreErrorMsg;
 import org.miaohong.newfishchatserver.core.lb.strategy.ServiceStrategy;
 import org.miaohong.newfishchatserver.core.rpc.client.RPCFuture;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.AbstractInvocationHandler;
 import org.miaohong.newfishchatserver.core.rpc.network.client.transport.NettyClientHandler;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
-import org.miaohong.newfishchatserver.core.rpc.registry.serializer.ServiceInstance;
+import org.miaohong.newfishchatserver.core.rpc.register.serializer.ServiceInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,9 +56,11 @@ public class BytebuddyInvocationHandler extends AbstractInvocationHandler {
 
         LOG.info("start choose handler");
 
-        Thread.sleep(2000);
-
         ServiceInstance serviceInstance = serviceStrategy.getInstance();
+
+        if (serviceInstance == null) {
+            throw new ClientCoreException(new CoreErrorMsg(-1, 1001, "cantnot find service"));
+        }
 
         LOG.info("serviceInstance : {}", serviceInstance);
         NettyClientHandler handler = serviceStrategy.getNettyClientHandler(
@@ -65,6 +69,7 @@ public class BytebuddyInvocationHandler extends AbstractInvocationHandler {
         LOG.info("choose handler {}", handler);
 
         RPCFuture rpcFuture = handler.sendRequest(request);
+
         return rpcFuture.get();
     }
 }

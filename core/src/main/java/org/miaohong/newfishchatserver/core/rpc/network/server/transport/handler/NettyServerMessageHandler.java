@@ -1,6 +1,11 @@
 package org.miaohong.newfishchatserver.core.rpc.network.server.transport.handler;
 
 import com.google.common.eventbus.Subscribe;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -22,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -37,12 +43,12 @@ public class NettyServerMessageHandler extends SimpleChannelInboundHandler<RpcRe
     private CommonNettyPropConfig nettyPropConfig;
     private org.miaohong.newfishchatserver.core.rpc.channel.Channel channel;
 
-    private ThreadPoolExecutor threadExecutor;
+    private ListeningExecutorService executor;
 
     public NettyServerMessageHandler(CommonNettyPropConfig nettyPropConfig) {
         LOG.info("enter NettyServerMessageHandler");
         this.nettyPropConfig = nettyPropConfig;
-        this.threadExecutor = getExecutor();
+        this.executor = MoreExecutors.listeningDecorator(getExecutor());
     }
 
     private ThreadPoolExecutor getExecutor() {
@@ -88,25 +94,56 @@ public class NettyServerMessageHandler extends SimpleChannelInboundHandler<RpcRe
         super.channelInactive(ctx);
     }
 
-    @Override
-    public void channelRead0(final ChannelHandlerContext ctx, final RpcRequest request) {
-        threadExecutor.submit(() -> {
-            LOG.info("Receive request {}", request.getRequestId());
-            LOG.info("client set {}", channels);
+    private RpcResponse buildResponse(String requestId, boolean isSuccess, Object result, String errMsg) {
 
-            RpcResponse response = new RpcResponse();
-            response.setRequestId(request.getRequestId());
-            try {
-                Object result = handle(request);
-                response.setResult(result);
-            } catch (Exception e) {
-                response.setError("failed");
-                LOG.error("RPC Server handle request error {}", e.getMessage(), e);
+        RpcResponse response = new RpcResponse();
+        response.setRequestId(requestId);
+
+        if (isSuccess) {
+            response.setResult(result);
+        } else {
+            response.setError(true);
+            response.setErrorMsg(errMsg);
+        }
+
+        return response;
+    }
+
+    private void processReq(final RpcRequest request) throws ExecutionException, InterruptedException {
+        LOG.info("Receive request {}", request.getRequestId());
+        LOG.info("client set {}", channels);
+
+        String requestId = request.getRequestId();
+
+        ListenableFuture<Object> explosion = executor.submit(() -> handle(request));
+        Futures.addCallback(explosion, new FutureCallback<Object>() {
+            // we want this handler to run immediately after we push the big red button!
+            @Override
+            public void onSuccess(Object explosion) {
+                LOG.info("onSuccess");
+                RpcResponse response = buildResponse(requestId, true, explosion, null);
+                channel.writeAndFlush(response);
             }
 
-            LOG.info("start to send response");
-            channel.writeAndFlush(response);
-        });
+            @Override
+            public void onFailure(Throwable e) {
+                LOG.info("onFailure");
+                RpcResponse response = buildResponse(requestId, false, null, e.getMessage());
+                LOG.error("RPC Server handle request error {}", e.getMessage(), e);
+                channel.writeAndFlush(response);
+            }
+        }, getExecutor());
+    }
+
+    @Override
+    public void channelRead0(final ChannelHandlerContext ctx, final RpcRequest request) {
+        try {
+            processReq(request);
+        } catch (ExecutionException e) {
+            LOG.error(e.getMessage(), e);
+        } catch (InterruptedException e) {
+            LOG.error(e.getMessage(), e);
+        }
     }
 
     private Object handle(final RpcRequest request) {
@@ -121,9 +158,6 @@ public class NettyServerMessageHandler extends SimpleChannelInboundHandler<RpcRe
         String methodName = request.getMethodName();
         Class<?>[] parameterTypes = request.getParameterTypes();
         Object[] parameters = request.getParameters();
-
-        LOG.info(serviceClass.getName());
-        LOG.info(methodName);
 
         return CglibProxy.invoke(serviceClass, methodName, parameterTypes, serviceBean, parameters);
     }

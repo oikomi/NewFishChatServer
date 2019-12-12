@@ -3,7 +3,7 @@ package org.miaohong.newfishchatserver.core.lb.strategy;
 
 import org.miaohong.newfishchatserver.annotations.SpiMeta;
 import org.miaohong.newfishchatserver.core.rpc.network.client.transport.NettyClientHandler;
-import org.miaohong.newfishchatserver.core.rpc.registry.serializer.ServiceInstance;
+import org.miaohong.newfishchatserver.core.rpc.register.serializer.ServiceInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -22,6 +22,17 @@ public class RandomStrategy extends AbstractServiceStrategy implements ServiceSt
     public RandomStrategy() {
         super();
     }
+
+    @Override
+    public ServiceInstance getInstance(int timeout) {
+        List<ServiceInstance> instances = instanceProvider.getInstances(timeout);
+        if (CollectionUtils.isEmpty(instances)) {
+            return null;
+        }
+        int thisIndex = random.nextInt(instances.size());
+        return instances.get(thisIndex);
+    }
+
 
     @Override
     public ServiceInstance getInstance() {

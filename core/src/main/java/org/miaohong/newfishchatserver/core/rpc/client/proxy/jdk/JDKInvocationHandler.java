@@ -1,12 +1,14 @@
 package org.miaohong.newfishchatserver.core.rpc.client.proxy.jdk;
 
 import org.miaohong.newfishchatserver.annotations.Internal;
+import org.miaohong.newfishchatserver.core.execption.ClientCoreException;
+import org.miaohong.newfishchatserver.core.execption.CoreErrorMsg;
 import org.miaohong.newfishchatserver.core.lb.strategy.ServiceStrategy;
 import org.miaohong.newfishchatserver.core.rpc.client.RPCFuture;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.AbstractInvocationHandler;
 import org.miaohong.newfishchatserver.core.rpc.network.client.transport.NettyClientHandler;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
-import org.miaohong.newfishchatserver.core.rpc.registry.serializer.ServiceInstance;
+import org.miaohong.newfishchatserver.core.rpc.register.serializer.ServiceInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +25,6 @@ public class JDKInvocationHandler<T> extends AbstractInvocationHandler implement
     public JDKInvocationHandler(ServiceStrategy serviceStrategy) {
         this.serviceStrategy = serviceStrategy;
     }
-
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -46,11 +47,14 @@ public class JDKInvocationHandler<T> extends AbstractInvocationHandler implement
         RpcRequest request = buildRequest(method, args);
         LOG.info("send rpc");
 
-        Thread.sleep(2000);
-
-        ServiceInstance serviceInstance = serviceStrategy.getInstance();
+        ServiceInstance serviceInstance = serviceStrategy.getInstance(1000);
 
         LOG.info("serviceInstance : {}", serviceInstance);
+
+        if (serviceInstance == null) {
+            throw new ClientCoreException(new CoreErrorMsg(-1, 1001, "cantnot find service"));
+        }
+
         NettyClientHandler handler = serviceStrategy.getNettyClientHandler(
                 serviceInstance.getServerAddr());
 

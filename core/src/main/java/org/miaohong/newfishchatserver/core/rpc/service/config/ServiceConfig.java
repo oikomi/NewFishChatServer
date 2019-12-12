@@ -6,7 +6,7 @@ import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBus;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBusManager;
 import org.miaohong.newfishchatserver.core.rpc.network.NetworkConfig;
 import org.miaohong.newfishchatserver.core.rpc.network.server.transport.handler.NettyServerMessageHandler;
-import org.miaohong.newfishchatserver.core.rpc.registry.zk.ZookeeperRegistry;
+import org.miaohong.newfishchatserver.core.rpc.register.zk.ZookeeperRegistry;
 import org.miaohong.newfishchatserver.core.rpc.service.ServiceBootstrap;
 import org.miaohong.newfishchatserver.core.rpc.service.ServiceType;
 

@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.rpc.registry.serializer;
+package org.miaohong.newfishchatserver.core.rpc.register.serializer;
 
 public interface InstanceSerializer {
     byte[] serialize(ServiceInstance instance) throws Exception;

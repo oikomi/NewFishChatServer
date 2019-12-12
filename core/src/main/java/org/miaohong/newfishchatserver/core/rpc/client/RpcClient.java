@@ -12,7 +12,7 @@ public class RpcClient<T> implements Client {
     private static final Logger LOG = LoggerFactory.getLogger(RpcClient.class);
 
     private static ThreadPoolExecutor threadPoolExecutor = ThreadPoolUtils.newCachedThreadPool(
-            16, 16, ThreadPoolUtils.buildQueue(64));
+            4, 16, ThreadPoolUtils.buildQueue(64));
 
     private ConsumerBootstrap<T> consumerBootstrap;
 
@@ -29,14 +29,10 @@ public class RpcClient<T> implements Client {
         return consumerBootstrap.refer();
     }
 
-    @Override
-    public void start() {
-        // NOTHING
-    }
-
-    @Override
-    public void shutDown() {
-        threadPoolExecutor.shutdown();
+    private void shutDown() {
+        if (threadPoolExecutor != null) {
+            threadPoolExecutor.shutdown();
+        }
         if (consumerBootstrap != null) {
             consumerBootstrap.destroy();
         }

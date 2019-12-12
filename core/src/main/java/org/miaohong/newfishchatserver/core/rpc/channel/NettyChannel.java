@@ -57,7 +57,6 @@ public class NettyChannel implements
                         + " for msg : " + obj
                         + ", Cause by:", throwable);
             }
-
         });
 
     }

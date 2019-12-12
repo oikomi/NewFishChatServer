@@ -10,7 +10,8 @@ import org.miaohong.newfishchatserver.core.lb.strategy.StrategyConstants;
 import org.miaohong.newfishchatserver.core.rpc.client.proxy.ProxyConstants;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBus;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.EventBusManager;
-import org.miaohong.newfishchatserver.core.rpc.registry.RegisterConstants;
+import org.miaohong.newfishchatserver.core.rpc.register.RegisterConstants;
+import org.miaohong.newfishchatserver.core.rpc.register.listener.ServiceCacheListenerImpl;
 import org.miaohong.newfishchatserver.core.util.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,7 @@ public class ConsumerConfig<T> {
 
     public ConsumerConfig() {
         eventBus.register(new AbstractServiceStrategy.RpcClientHandlerListener());
+        eventBus.register(ServiceCacheListenerImpl.get());
     }
 
     @SuppressWarnings("unchecked")

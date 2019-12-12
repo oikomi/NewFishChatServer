@@ -28,6 +28,8 @@ public abstract class AbstractNettyComponet implements Destroyable {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractNettyComponet.class);
 
+    private static final String ERR_MEG_FORMAT = "Not support type for %s";
+
     private final CommonNettyPropConfig commonNettyPropConfig = CommonNettyPropConfig.get();
 
     protected Bootstrap clientBootstrap;
@@ -72,14 +74,14 @@ public abstract class AbstractNettyComponet implements Destroyable {
                 }
                 break;
             default:
-                throw new ServerCoreException("Not support type");
+                throw new ServerCoreException(String.format(ERR_MEG_FORMAT,
+                        commonNettyPropConfig.getTransportType()));
         }
 
         setBootstrapOption(role);
     }
 
     private void initNioBootstrap(NetworkRole role) {
-
         switch (role) {
             case SERVER:
                 NioEventLoopGroup bossGroup = new NioEventLoopGroup(1, getNamedThreadFactory("Netty Server"));
@@ -93,7 +95,7 @@ public abstract class AbstractNettyComponet implements Destroyable {
                 clientBootstrap.group(eventLoopGroup).channel(NioSocketChannel.class);
                 break;
             default:
-                throw new ServerCoreException("Not support type");
+                throw new ServerCoreException(String.format(ERR_MEG_FORMAT, role));
 
         }
     }
@@ -114,14 +116,13 @@ public abstract class AbstractNettyComponet implements Destroyable {
                 break;
 
             default:
-                throw new ServerCoreException("Not support type");
+                throw new ServerCoreException(String.format(ERR_MEG_FORMAT, role));
 
         }
 
     }
 
     private void setBootstrapOption(NetworkRole role) {
-
         switch (role) {
             case SERVER:
                 serverBootstrap.localAddress(
@@ -156,8 +157,7 @@ public abstract class AbstractNettyComponet implements Destroyable {
                 break;
 
             default:
-                throw new ServerCoreException("Not support type");
-
+                throw new ServerCoreException(String.format(ERR_MEG_FORMAT, role));
         }
 
     }

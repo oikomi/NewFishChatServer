@@ -6,5 +6,7 @@ public interface NetworkConfig {
 
     int getPort();
 
+    String getServerAddr();
+
     int getThreadsNum();
 }

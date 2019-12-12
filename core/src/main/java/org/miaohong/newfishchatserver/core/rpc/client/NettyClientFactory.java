@@ -18,5 +18,4 @@ public class NettyClientFactory {
             throw new ClientCoreException(e.getMessage(), e);
         }
     }
-
 }

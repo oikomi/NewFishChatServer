@@ -1,31 +1,28 @@
 package org.miaohong.newfishchatserver.core.rpc.client;
 
+import org.miaohong.newfishchatserver.core.execption.ClientCoreException;
+import org.miaohong.newfishchatserver.core.execption.CoreErrorMsg;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcRequest;
 import org.miaohong.newfishchatserver.core.rpc.proto.RpcResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class RPCFuture implements Future<Object> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RPCFuture.class);
 
+    private static final long RES_TIME_THRESHOLD = 5000;
+
     private Sync sync;
     private RpcRequest request;
     private RpcResponse response;
     private long startTime;
-    private long responseTimeThreshold = 5000;
-
-    private List<AsyncRPCCallback> pendingCallbacks = new ArrayList<>();
-    private ReentrantLock lock = new ReentrantLock();
 
     public RPCFuture(RpcRequest request) {
         this.sync = new Sync();
@@ -44,7 +41,7 @@ public class RPCFuture implements Future<Object> {
         if (this.response != null) {
             return this.response.getResult();
         } else {
-            return null;
+            throw new ClientCoreException(new CoreErrorMsg(-1, 1005, "call failed"));
         }
     }
 
@@ -52,8 +49,8 @@ public class RPCFuture implements Future<Object> {
     public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         boolean success = sync.tryAcquireNanos(-1, unit.toNanos(timeout));
         if (success) {
-            if (this.response != null) {
-                return this.response.getResult();
+            if (response != null) {
+                return response.getResult();
             } else {
                 return null;
             }
@@ -77,51 +74,15 @@ public class RPCFuture implements Future<Object> {
     public void done(RpcResponse reponse) {
         this.response = reponse;
         sync.release(1);
-        invokeCallbacks();
         // Threshold
         long responseTime = System.currentTimeMillis() - startTime;
-        if (responseTime > this.responseTimeThreshold) {
-            LOG.warn("Service response time is too slow. Request id = {}", reponse.getRequestId() + ". Response Time = " + responseTime + "ms");
+        if (responseTime > RES_TIME_THRESHOLD) {
+            LOG.warn("Service response time is too slow. Request id = {}",
+                    reponse.getRequestId() + ". Response Time = " + responseTime + "ms");
         }
     }
 
-    private void invokeCallbacks() {
-        lock.lock();
-        try {
-            for (final AsyncRPCCallback callback : pendingCallbacks) {
-                runCallback(callback);
-            }
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    public RPCFuture addCallback(AsyncRPCCallback callback) {
-        lock.lock();
-        try {
-            if (isDone()) {
-                runCallback(callback);
-            } else {
-                this.pendingCallbacks.add(callback);
-            }
-        } finally {
-            lock.unlock();
-        }
-        return this;
-    }
-
-    private void runCallback(final AsyncRPCCallback callback) {
-        final RpcResponse res = this.response;
-        RpcClient.submit(() -> {
-            if (!res.isError()) {
-                callback.success(res.getResult());
-            } else {
-                callback.fail(new RuntimeException("Response error", new Throwable(res.getError())));
-            }
-        });
-    }
-
-    static class Sync extends AbstractQueuedSynchronizer {
+    private static class Sync extends AbstractQueuedSynchronizer {
 
         private static final long serialVersionUID = 3812143276001990089L;
 

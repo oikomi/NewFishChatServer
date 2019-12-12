@@ -48,7 +48,7 @@ public class NettyClient extends AbstractNettyComponet implements Runnable {
     }
 
     private void connect(InetSocketAddress remoteAddress) {
-
+        LOG.info("do connect to server");
         Preconditions.checkState(clientBootstrap != null, "Client has not been initialized yet.");
 
         long start = System.currentTimeMillis();
@@ -58,10 +58,11 @@ public class NettyClient extends AbstractNettyComponet implements Runnable {
             channelFuture.addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
                     NettyClientHandler handler = future.channel().pipeline().get(NettyClientHandler.class);
-                    eventBus.post(new NettyClientHandlerRegistedEvent(
-                            config.getHost() + ":" + config.getPort(), handler));
+                    eventBus.post(new NettyClientHandlerRegistedEvent(config.getServerAddr(), handler));
                     final long duration = System.currentTimeMillis() - start;
                     LOG.info("Successfully connect to remote server. remote peer = {}, (took {} ms)", remoteAddress, duration);
+                } else {
+                    LOG.error("Failed connect to remote server. remote peer = {}, cause {}", remoteAddress, future.cause());
                 }
             });
 

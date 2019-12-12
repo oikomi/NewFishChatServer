@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.rpc.registry.zk;
+package org.miaohong.newfishchatserver.core.rpc.register.zk;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.listen.Listenable;
@@ -6,26 +6,25 @@ import org.apache.curator.framework.listen.StandardListenerManager;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
-import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfig;
-import org.miaohong.newfishchatserver.core.rpc.registry.listener.ServiceCacheListener;
-import org.miaohong.newfishchatserver.core.rpc.registry.serializer.JsonInstanceSerializer;
+import org.miaohong.newfishchatserver.core.rpc.register.listener.ServiceCacheListener;
+import org.miaohong.newfishchatserver.core.rpc.register.serializer.JsonInstanceSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executor;
 
-public class ServiceCache implements PathChildrenCacheListener, Listenable<ServiceCacheListener> {
+public class ZkServiceCache implements PathChildrenCacheListener, Listenable<ServiceCacheListener> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ServiceCache.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ZkServiceCache.class);
 
     private StandardListenerManager<ServiceCacheListener> listenerManager = StandardListenerManager.standard();
 
     private String path;
-    private JsonInstanceSerializer<ServerConfig> serializer;
 
-    public ServiceCache(String path, JsonInstanceSerializer<ServerConfig> serializer) {
+    private JsonInstanceSerializer serializer = JsonInstanceSerializer.get();
+
+    public ZkServiceCache(String path) {
         this.path = path;
-        this.serializer = serializer;
     }
 
     @Override

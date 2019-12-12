@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.common.eventbus.Subscribe;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.NettyClientHandlerRegistedEvent;
 import org.miaohong.newfishchatserver.core.rpc.network.client.transport.NettyClientHandler;
-import org.miaohong.newfishchatserver.core.rpc.registry.listener.ServiceCacheListenerImpl;
+import org.miaohong.newfishchatserver.core.rpc.register.listener.ServiceCacheListenerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

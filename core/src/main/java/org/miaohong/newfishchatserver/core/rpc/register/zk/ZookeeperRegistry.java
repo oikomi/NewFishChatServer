@@ -1,4 +1,4 @@
-package org.miaohong.newfishchatserver.core.rpc.registry.zk;
+package org.miaohong.newfishchatserver.core.rpc.register.zk;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -20,13 +20,13 @@ import org.miaohong.newfishchatserver.core.rpc.eventbus.event.EventAction;
 import org.miaohong.newfishchatserver.core.rpc.eventbus.event.ServiceRegistedEvent;
 import org.miaohong.newfishchatserver.core.rpc.network.NetworkConfig;
 import org.miaohong.newfishchatserver.core.rpc.network.server.config.ServerConfig;
-import org.miaohong.newfishchatserver.core.rpc.registry.AbstractRegister;
-import org.miaohong.newfishchatserver.core.rpc.registry.RegisterConstants;
-import org.miaohong.newfishchatserver.core.rpc.registry.RegisterRole;
-import org.miaohong.newfishchatserver.core.rpc.registry.RegistryPropConfig;
-import org.miaohong.newfishchatserver.core.rpc.registry.listener.ServiceCacheListenerImpl;
-import org.miaohong.newfishchatserver.core.rpc.registry.serializer.JsonInstanceSerializer;
-import org.miaohong.newfishchatserver.core.rpc.registry.serializer.ServiceInstance;
+import org.miaohong.newfishchatserver.core.rpc.register.AbstractRegister;
+import org.miaohong.newfishchatserver.core.rpc.register.RegisterConstants;
+import org.miaohong.newfishchatserver.core.rpc.register.RegisterPropConfig;
+import org.miaohong.newfishchatserver.core.rpc.register.RegisterRole;
+import org.miaohong.newfishchatserver.core.rpc.register.listener.ServiceCacheListenerImpl;
+import org.miaohong.newfishchatserver.core.rpc.register.serializer.JsonInstanceSerializer;
+import org.miaohong.newfishchatserver.core.rpc.register.serializer.ServiceInstance;
 import org.miaohong.newfishchatserver.core.rpc.service.config.ServiceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,20 +48,19 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
     private static final List<ServiceConfig> SERVICE_CONFIG_LIST = Lists.newArrayList();
     private CuratorFramework zkClient;
 
-    private JsonInstanceSerializer<ServerConfig> serializer =
-            new JsonInstanceSerializer<>(ServerConfig.class);
+    private JsonInstanceSerializer serializer = JsonInstanceSerializer.get();
 
     public ZookeeperRegistry() {
-        super(RegistryPropConfig.get());
+        super(RegisterPropConfig.get());
     }
 
     private void buildZkClient() {
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(
-                registryPropConfig.getRetryWait(), registryPropConfig.getMaxRetryAttempts());
+                registerPropConfig.getRetryWait(), registerPropConfig.getMaxRetryAttempts());
         CuratorFrameworkFactory.Builder zkClientuilder = CuratorFrameworkFactory.builder()
-                .connectString(registryPropConfig.getAddress())
-                .sessionTimeoutMs(registryPropConfig.getConnectTimeout())
-                .connectionTimeoutMs(registryPropConfig.getTimeout())
+                .connectString(registerPropConfig.getAddress())
+                .sessionTimeoutMs(registerPropConfig.getConnectTimeout())
+                .connectionTimeoutMs(registerPropConfig.getTimeout())
                 .canBeReadOnly(false)
                 .retryPolicy(retryPolicy)
                 .defaultData(null);
@@ -93,6 +92,11 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
             case LOST:
                 // Maybe we have to throw an exception here to terminate
                 LOG.info("Connection to ZooKeeper lost.");
+                break;
+            case READ_ONLY:
+                LOG.info("Connection to ZooKeeper read only.");
+                break;
+            default:
                 break;
         }
     }
@@ -130,7 +134,7 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
         LOG.info("do register");
         NetworkConfig serverConfig = serviceConfig.getServerConfig();
         StringBuilder sb = new StringBuilder();
-        String serverUrl = sb.append(buildServicePath(registryPropConfig.getRoot(), serviceConfig)).
+        String serverUrl = sb.append(buildServicePath(registerPropConfig.getRoot(), serviceConfig)).
                 append(CONTEXT_SEP).append(serverConfig.getHost()).append(":")
                 .append(serverConfig.getPort()).toString();
 
@@ -160,7 +164,7 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
         LOG.info("do unRegister");
         NetworkConfig serverConfig = serviceConfig.getServerConfig();
         StringBuilder sb = new StringBuilder();
-        String serverUrl = sb.append(buildServicePath(registryPropConfig.getRoot(), serviceConfig)).
+        String serverUrl = sb.append(buildServicePath(registerPropConfig.getRoot(), serviceConfig)).
                 append(CONTEXT_SEP).append(serverConfig.getHost()).append(":")
                 .append(serverConfig.getPort()).toString();
 
@@ -179,17 +183,18 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
     }
 
     @Override
-    public List<String> subscribe(final ConsumerConfig config) {
+    public void subscribe(final ConsumerConfig config) {
+        LOG.info("do subscribe");
         List<String> servers = Lists.newArrayList();
-        final String servicePath = buildServicePath(registryPropConfig.getRoot(), config);
+        final String servicePath = buildServicePath(registerPropConfig.getRoot(), config);
         PathChildrenCache pathChildrenCache = INTERFACE_SERVICE_CACHE.get(config);
         if (pathChildrenCache == null) {
             pathChildrenCache = new PathChildrenCache(zkClient, servicePath, true);
-            ServiceCache serviceCache = new ServiceCache(servicePath, serializer);
-            serviceCache.addListener(ServiceCacheListenerImpl.get());
-            pathChildrenCache.getListenable().addListener(serviceCache);
+            ZkServiceCache zkServiceCache = new ZkServiceCache(servicePath);
+            zkServiceCache.addListener(ServiceCacheListenerImpl.get());
+            pathChildrenCache.getListenable().addListener(zkServiceCache);
             try {
-                pathChildrenCache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
+                pathChildrenCache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
                 throw new SystemCoreException(e.getMessage());
@@ -202,8 +207,6 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
             String server = data.getPath().substring(servicePath.length() + 1);
             servers.add(server);
         }
-
-        return servers;
     }
 
     @Override
@@ -224,8 +227,8 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
         return zkClient;
     }
 
-    private void closePathChildrenCache(Map<ConsumerConfig, PathChildrenCache> map) {
-        for (Map.Entry<ConsumerConfig, PathChildrenCache> entry : map.entrySet()) {
+    private void closePathChildrenCache() {
+        for (Map.Entry<ConsumerConfig, PathChildrenCache> entry : INTERFACE_SERVICE_CACHE.entrySet()) {
             try {
                 entry.getValue().close();
             } catch (Exception e) {
@@ -242,7 +245,7 @@ public class ZookeeperRegistry extends AbstractRegister implements UnhandledErro
             SERVICE_CONFIG_LIST.forEach(this::unRegister);
         }
 
-        closePathChildrenCache(INTERFACE_SERVICE_CACHE);
+        closePathChildrenCache();
         if (zkClient != null && zkClient.getState() == CuratorFrameworkState.STARTED) {
             zkClient.close();
         }

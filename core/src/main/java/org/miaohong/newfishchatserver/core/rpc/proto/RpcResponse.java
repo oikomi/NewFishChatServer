@@ -4,11 +4,10 @@ import lombok.Data;
 
 @Data
 public class RpcResponse {
+
+    private boolean isError = false;
     private String requestId;
-    private String error;
+    private String errorMsg;
     private Object result;
 
-    public boolean isError() {
-        return error != null;
-    }
 }

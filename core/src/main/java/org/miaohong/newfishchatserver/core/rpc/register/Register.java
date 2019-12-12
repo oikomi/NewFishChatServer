@@ -1,9 +1,8 @@
-package org.miaohong.newfishchatserver.core.rpc.registry;
+package org.miaohong.newfishchatserver.core.rpc.register;
 
 import org.miaohong.newfishchatserver.core.rpc.client.ConsumerConfig;
 import org.miaohong.newfishchatserver.core.rpc.service.config.ServiceConfig;
 
-import java.util.List;
 
 public interface Register {
 
@@ -14,7 +13,7 @@ public interface Register {
 
     void unRegister(final ServiceConfig config);
 
-    List<String> subscribe(final ConsumerConfig config);
+    void subscribe(final ConsumerConfig config);
 
     void unSubscribe();
 
